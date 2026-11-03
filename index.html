@@ -1,1 +1,295 @@
-AI Safety Research: coming soon.
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Safety Research: start this week</title>
+<meta name="description" content="Find a research partner, pick a well-scoped AI safety question, and check it hasn’t already been done. Free, for students.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #000000;
+    --ink-soft: #4d4d4d;
+    --rule: #d4d4d4;
+    --stroke: #000000;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #000000;
+      --ink: #ffffff;
+      --ink-soft: #b3b3b3;
+      --rule: #333333;
+      --stroke: #ffffff;
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { background: var(--paper); }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    font-variation-settings: "wdth" 100;
+    font-size: 1.125rem;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+
+  a { color: inherit; }
+  a:focus-visible, .cta:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 4px;
+  }
+
+  .wrap {
+    width: min(1120px, 100% - 3rem);
+    margin-inline: auto;
+  }
+
+  /* Hero: the most relevant thing, so the biggest thing */
+  .hero {
+    position: relative;
+    min-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 5rem 4rem;
+  }
+  .slash-hero {
+    position: absolute;
+    top: 38%;
+    right: -22%;
+    width: 80%;
+    max-width: 1100px;
+    color: var(--stroke);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .hero-text { position: relative; z-index: 1; }
+  h1 {
+    font-variation-settings: "wdth" 68;
+    font-weight: 900;
+    font-size: clamp(3.4rem, 11vw, 9.5rem);
+    line-height: 0.88;
+    letter-spacing: -0.02em;
+    max-width: 9ch;
+  }
+  .lede {
+    margin-top: 2rem;
+    font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+    line-height: 1.4;
+    max-width: 30ch;
+    background: var(--paper);
+    padding: 0.25rem 0.5rem 0.25rem 0;
+  }
+  .cta {
+    display: inline-block;
+    margin-top: 2.5rem;
+    background: var(--ink);
+    color: var(--paper);
+    text-decoration: none;
+    font-weight: 800;
+    font-variation-settings: "wdth" 85;
+    font-size: clamp(1.3rem, 2.4vw, 1.75rem);
+    padding: 1.1rem 2rem;
+    border-radius: 2px;
+    transition: transform 0.15s ease;
+  }
+  .cta:hover { transform: translateY(-2px); }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 2rem;
+    margin-top: 2.5rem;
+  }
+  .actions .cta { margin-top: 0; }
+  .secondary {
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-underline-offset: 0.25em;
+    text-decoration-thickness: 2px;
+    background: var(--paper);
+    padding: 0.2rem 0.3rem;
+  }
+  .secondary:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+
+  /* Research tracker: second most relevant */
+  .research { padding-block: 5rem; border-top: 1px solid var(--rule); }
+  .research h2 {
+    font-variation-settings: "wdth" 75;
+    font-weight: 800;
+    font-size: clamp(2rem, 4.5vw, 3.25rem);
+    line-height: 1;
+    margin-bottom: 1rem;
+  }
+  .research p { color: var(--ink-soft); max-width: 55ch; }
+
+  /* Learning resources: useful, a step down from the tracker */
+  .learn { padding-block: 4rem; border-top: 1px solid var(--rule); }
+  .learn h2 {
+    font-variation-settings: "wdth" 75;
+    font-weight: 800;
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    line-height: 1.05;
+    margin-bottom: 0.75rem;
+  }
+  .learn-intro { color: var(--ink-soft); max-width: 55ch; margin-bottom: 2rem; }
+  .learn ul {
+    list-style: none;
+    display: grid;
+    gap: 1.25rem 2.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  .learn li a {
+    display: block;
+    font-weight: 800;
+    font-size: 1.2rem;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 2px;
+  }
+  .learn li span { display: block; color: var(--ink-soft); font-size: 1rem; margin-top: 0.25rem; max-width: 36ch; }
+
+  /* Why: supporting detail, smaller again */
+  .why {
+    position: relative;
+    padding-block: 4rem 5rem;
+    border-top: 1px solid var(--rule);
+  }
+  .slash-why {
+    position: absolute;
+    left: -14%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 52%;
+    max-width: 620px;
+    color: var(--stroke);
+    opacity: 0.9;
+    pointer-events: none;
+  }
+  .why-text {
+    position: relative;
+    max-width: 62ch;
+    margin-left: auto;
+    background: var(--paper);
+    padding: 1rem 0 1rem 1.5rem;
+  }
+  .why h2 {
+    font-weight: 800;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .why p + p { margin-top: 1rem; }
+
+  /* Join */
+  .join { padding-block: 4rem; border-top: 1px solid var(--rule); }
+  .join h2 {
+    font-variation-settings: "wdth" 75;
+    font-weight: 800;
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    margin-bottom: 0.75rem;
+  }
+  .join p { max-width: 55ch; color: var(--ink-soft); }
+  .join .cta { margin-top: 1.75rem; }
+  footer a + a, footer a:last-child { margin-left: 0.75rem; }
+
+  /* Footer: least relevant, smallest */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-block: 2rem 3rem;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta { transition: none; }
+    .cta:hover { transform: none; }
+  }
+  @media (max-width: 640px) {
+    .slash-hero { right: -40%; width: 140%; top: auto; bottom: 2%; }
+    .slash-why { width: 90%; left: -30%; top: auto; bottom: 0; transform: none; opacity: 0.25; }
+    .why-text { padding-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="rough" x="-5%" y="-40%" width="110%" height="180%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.004 0.08" numOctaves="2" seed="4" result="edge"/>
+      <feDisplacementMap in="SourceGraphic" in2="edge" scale="22" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.002 0.35" numOctaves="2" seed="9" result="bristle"/>
+      <feColorMatrix in="bristle" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.9" result="gaps"/>
+      <feComposite in="shape" in2="gaps" operator="in"/>
+    </filter>
+  </defs>
+</svg>
+
+<header class="wrap hero">
+  <svg class="slash-hero" viewBox="0 0 1000 560" overflow="visible" aria-hidden="true">
+    <g fill="currentColor" transform="rotate(-14 500 210)">
+      <path filter="url(#rough)" d="M60 230 C 300 206, 650 198, 990 190 L 990 320 C 660 326, 320 338, 70 346 Z"/>
+      <path filter="url(#rough)" d="M200 372 C 430 366, 700 362, 950 358 L 950 386 C 700 390, 440 396, 210 400 Z" opacity="0.85"/>
+    </g>
+  </svg>
+  <div class="hero-text">
+    <h1>Start AI safety research this week.</h1>
+    <p class="lede">Find someone to work with, pick a question worth answering, and check it hasn’t already been done.</p>
+    <div class="actions">
+      <a class="cta" href="https://docs.google.com/forms/d/e/1FAIpQLSdmHTtx13CAIPE9tAMnrkUetPg1fFktIbesKEXKRQu8jyrQ9A/viewform">Find a research partner</a>
+      <a class="secondary" href="questions.html">Browse research questions</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="wrap research" id="research" aria-labelledby="research-title">
+    <h2 id="research-title">What’s already being researched</h2>
+    <p>A searchable list of current and past AI safety projects, so you can check your idea is new before you start. Coming soon.</p>
+  </section>
+
+  <section class="wrap learn" id="learn" aria-labelledby="learn-title">
+    <h2 id="learn-title">Learn the basics</h2>
+    <p class="learn-intro">A short list of good places to start. You don’t need to finish them before you begin a project.</p>
+    <ul>
+      <li><a href="https://80000hours.org/problem-profiles/artificial-intelligence/">80,000 Hours: risks from AI</a><span>A clear overview of why AI safety matters and what work is being done.</span></li>
+      <li><a href="https://bluedot.org/">BlueDot Impact courses</a><span>Free, structured courses on AI safety and governance, with reading groups.</span></li>
+      <li><a href="https://www.arena.education/">ARENA</a><span>Hands-on coding exercises for technical AI safety research.</span></li>
+      <li><a href="https://www.alignmentforum.org/">Alignment Forum</a><span>Where much current alignment research is posted and discussed.</span></li>
+      <li><a href="https://www.aisafety.com/">AISafety.com</a><span>A directory of courses, communities, funding and other resources.</span></li>
+    </ul>
+  </section>
+
+  <section class="wrap why" aria-labelledby="why-title">
+    <svg class="slash-why" viewBox="0 0 600 200" overflow="visible" aria-hidden="true">
+      <g fill="currentColor" transform="rotate(-9 300 100)">
+        <path filter="url(#rough)" d="M10 90 C 180 82, 400 78, 590 74 L 590 128 C 400 132, 190 136, 15 142 Z"/>
+      </g>
+    </svg>
+    <div class="why-text">
+      <h2 id="why-title">Why start this way</h2>
+      <p>The best way to learn research is by doing it. All you need to begin is a good question, someone to work with, and a reason to keep going.</p>
+      <p>Every project teaches you something, and some turn into real contributions to the field. If yours goes well, we can help you find mentored programmes and other opportunities to take it further.</p>
+    </div>
+  </section>
+
+  <section class="wrap join" id="join" aria-labelledby="join-title">
+    <h2 id="join-title">Ready to start?</h2>
+    <p>Sign up in about three minutes. Tell us which role you’d like, what you’re interested in and when you’re free, and we’ll match you with a team.</p>
+    <a class="cta" href="https://docs.google.com/forms/d/e/1FAIpQLSdmHTtx13CAIPE9tAMnrkUetPg1fFktIbesKEXKRQu8jyrQ9A/viewform">Find a research partner</a>
+  </section>
+</main>
+
+<footer class="wrap">
+  Built by Zebedi Casajuana with <a href="https://www.eacambridge.org/">EA Cambridge</a>. <a href="privacy.html">Privacy</a>
+</footer>
+
+</body>
+</html>
