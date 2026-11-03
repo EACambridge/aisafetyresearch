@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research questions | AI Safety Research</title>
+<meta name="description" content="Find a research partner, pick a well-scoped AI safety question, and check it hasn’t already been done. Free, for students.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #000000;
+    --ink-soft: #4d4d4d;
+    --rule: #d4d4d4;
+    --stroke: #000000;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #000000;
+      --ink: #ffffff;
+      --ink-soft: #b3b3b3;
+      --rule: #333333;
+      --stroke: #ffffff;
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { background: var(--paper); }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    font-variation-settings: "wdth" 100;
+    font-size: 1.125rem;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+
+  a { color: inherit; }
+  a:focus-visible, .cta:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 4px;
+  }
+
+  .wrap {
+    width: min(1120px, 100% - 3rem);
+    margin-inline: auto;
+  }
+
+  /* Hero: the most relevant thing, so the biggest thing */
+  .hero {
+    position: relative;
+    min-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 5rem 4rem;
+  }
+  .slash-hero {
+    position: absolute;
+    top: 38%;
+    right: -22%;
+    width: 80%;
+    max-width: 1100px;
+    color: var(--stroke);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .hero-text { position: relative; z-index: 1; }
+  h1 {
+    font-variation-settings: "wdth" 68;
+    font-weight: 900;
+    font-size: clamp(3.4rem, 11vw, 9.5rem);
+    line-height: 0.88;
+    letter-spacing: -0.02em;
+    max-width: 9ch;
+  }
+  .lede {
+    margin-top: 2rem;
+    font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+    line-height: 1.4;
+    max-width: 30ch;
+    background: var(--paper);
+    padding: 0.25rem 0.5rem 0.25rem 0;
+  }
+  .cta {
+    display: inline-block;
+    margin-top: 2.5rem;
+    background: var(--ink);
+    color: var(--paper);
+    text-decoration: none;
+    font-weight: 800;
+    font-variation-settings: "wdth" 85;
+    font-size: clamp(1.3rem, 2.4vw, 1.75rem);
+    padding: 1.1rem 2rem;
+    border-radius: 2px;
+    transition: transform 0.15s ease;
+  }
+  .cta:hover { transform: translateY(-2px); }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 2rem;
+    margin-top: 2.5rem;
+  }
+  .actions .cta { margin-top: 0; }
+  .secondary {
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-underline-offset: 0.25em;
+    text-decoration-thickness: 2px;
+    background: var(--paper);
+    padding: 0.2rem 0.3rem;
+  }
+  .secondary:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+
+  /* Research tracker: second most relevant */
+  .research { padding-block: 5rem; border-top: 1px solid var(--rule); }
+  .research h2 {
+    font-variation-settings: "wdth" 75;
+    font-weight: 800;
+    font-size: clamp(2rem, 4.5vw, 3.25rem);
+    line-height: 1;
+    margin-bottom: 1rem;
+  }
+  .research p { color: var(--ink-soft); max-width: 55ch; }
+
+  /* Learning resources: useful, a step down from the tracker */
+  .learn { padding-block: 4rem; border-top: 1px solid var(--rule); }
+  .learn h2 {
+    font-variation-settings: "wdth" 75;
+    font-weight: 800;
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    line-height: 1.05;
+    margin-bottom: 0.75rem;
+  }
+  .learn-intro { color: var(--ink-soft); max-width: 55ch; margin-bottom: 2rem; }
+  .learn ul {
+    list-style: none;
+    display: grid;
+    gap: 1.25rem 2.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  .learn li a {
+    display: block;
+    font-weight: 800;
+    font-size: 1.2rem;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 2px;
+  }
+  .learn li span { display: block; color: var(--ink-soft); font-size: 1rem; margin-top: 0.25rem; max-width: 36ch; }
+
+  /* Why: supporting detail, smaller again */
+  .why {
+    position: relative;
+    padding-block: 4rem 5rem;
+    border-top: 1px solid var(--rule);
+  }
+  .slash-why {
+    position: absolute;
+    left: -14%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 52%;
+    max-width: 620px;
+    color: var(--stroke);
+    opacity: 0.9;
+    pointer-events: none;
+  }
+  .why-text {
+    position: relative;
+    max-width: 62ch;
+    margin-left: auto;
+    background: var(--paper);
+    padding: 1rem 0 1rem 1.5rem;
+  }
+  .why h2 {
+    font-weight: 800;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .why p + p { margin-top: 1rem; }
+
+  /* Join */
+  .join { padding-block: 4rem; border-top: 1px solid var(--rule); }
+  .join h2 {
+    font-variation-settings: "wdth" 75;
+    font-weight: 800;
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    margin-bottom: 0.75rem;
+  }
+  .join p { max-width: 55ch; color: var(--ink-soft); }
+  .join .cta { margin-top: 1.75rem; }
+  footer a + a, footer a:last-child { margin-left: 0.75rem; }
+
+  /* Footer: least relevant, smallest */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-block: 2rem 3rem;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta { transition: none; }
+    .cta:hover { transform: none; }
+  }
+  @media (max-width: 640px) {
+    .slash-hero { right: -40%; width: 140%; top: auto; bottom: 2%; }
+    .slash-why { width: 90%; left: -30%; top: auto; bottom: 0; transform: none; opacity: 0.25; }
+    .why-text { padding-left: 0; }
+  }
+</style>
+<style>
+  .page-head { padding-block: 4rem 2.5rem; }
+  .page-head h1 { margin-top: 2.5rem; max-width: 12ch; font-size: clamp(3rem, 8vw, 6.5rem); }
+  .page-head .lede { background: none; }
+  .qlist { list-style: none; border-top: 1px solid var(--rule); }
+  .qlist > li { padding-block: 2.25rem; border-bottom: 1px solid var(--rule); }
+  .area { color: var(--ink-soft); font-weight: 700; font-size: 1rem; }
+  .qlist h2 { font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 1.9rem); line-height: 1.2; max-width: 34ch; margin-top: 0.25rem; }
+  .qlist p { max-width: 62ch; margin-top: 0.75rem; }
+  .qlist .res { color: var(--ink-soft); font-size: 1rem; }
+  .prose { max-width: 66ch; padding-bottom: 4rem; }
+  .prose h2 { font-weight: 800; font-size: 1.5rem; margin-top: 2.5rem; margin-bottom: 0.5rem; }
+  .prose p + p, .prose ul { margin-top: 0.75rem; }
+  .prose ul { padding-left: 1.25rem; }
+  .note { margin-block: 3rem; color: var(--ink-soft); max-width: 62ch; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="rough" x="-5%" y="-40%" width="110%" height="180%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.004 0.08" numOctaves="2" seed="4" result="edge"/>
+      <feDisplacementMap in="SourceGraphic" in2="edge" scale="22" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.002 0.35" numOctaves="2" seed="9" result="bristle"/>
+      <feColorMatrix in="bristle" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.9" result="gaps"/>
+      <feComposite in="shape" in2="gaps" operator="in"/>
+    </filter>
+  </defs>
+</svg>
+<header class="wrap page-head">
+  <a class="secondary" href="index.html">Back to home</a>
+  <h1>Research questions</h1>
+  <p class="lede">Questions a small team can make real progress on in a term. Pick one when you sign up, or bring your own.</p>
+</header>
+<main class="wrap">
+  <ol class="qlist">
+    <li>
+      <div class="area">Interpretability</div>
+      <h2>Can you find a feature in a small open model that tracks a simple concept?</h2>
+      <p>Interpretability tries to understand what is happening inside a model. Finding and testing a single feature, such as one that tracks a language, a topic or a kind of error, is a manageable first project that teaches the core tools.</p>
+      <p class="res">Start with: <a href="https://www.neuronpedia.org/">Neuronpedia</a>, <a href="https://www.arena.education/">ARENA interpretability exercises</a>.</p>
+    </li>
+    <li>
+      <div class="area">Interpretability</div>
+      <h2>Do truthfulness probes in an open model generalise across topics?</h2>
+      <p>Researchers have trained simple probes that seem to detect whether a model “believes” a statement is true. Testing whether a probe trained on one topic still works on another tells us how much we can rely on them.</p>
+      <p class="res">Start with: <a href="https://arxiv.org/abs/2310.06824">The Geometry of Truth (Marks and Tegmark)</a>, <a href="https://www.arena.education/">ARENA interpretability exercises</a>.</p>
+    </li>
+    <li>
+      <div class="area">Evaluations</div>
+      <h2>How often do models give in when a user pushes back, and does model size matter?</h2>
+      <p>Models sometimes change a correct answer just because a user disagrees, which is called sycophancy. Measuring it across several open models is a clear, repeatable experiment that needs little more than an API and a spreadsheet.</p>
+      <p class="res">Start with: <a href="https://arxiv.org/abs/2310.13548">Towards Understanding Sycophancy in Language Models</a>, <a href="https://inspect.aisi.org.uk/">Inspect evaluation framework</a>.</p>
+    </li>
+    <li>
+      <div class="area">Evaluations</div>
+      <h2>Do models behave differently when a prompt suggests they are being tested?</h2>
+      <p>If models act differently when they think they are being evaluated, safety tests could give a misleading picture. A small study comparing behaviour on test-like and natural prompts is a useful contribution.</p>
+      <p class="res">Start with: <a href="https://arxiv.org/abs/2505.23836">Large Language Models Often Know When They Are Being Evaluated</a>, <a href="https://inspect.aisi.org.uk/">Inspect evaluation framework</a>.</p>
+    </li>
+    <li>
+      <div class="area">Chain of thought</div>
+      <h2>If a model’s reasoning is shortened or reworded, does its answer change?</h2>
+      <p>Reading a model’s step-by-step reasoning is one of our best ways to monitor it, but only if that reasoning actually drives the answer. Editing the reasoning and watching what happens is a direct test of this.</p>
+      <p class="res">Start with: <a href="https://arxiv.org/abs/2307.13702">Measuring Faithfulness in Chain-of-Thought Reasoning</a>, <a href="https://arxiv.org/abs/2305.04388">Language Models Don’t Always Say What They Think</a>.</p>
+    </li>
+    <li>
+      <div class="area">Governance</div>
+      <h2>What do frontier AI companies’ safety frameworks commit to, and where do they differ?</h2>
+      <p>Several leading AI companies have published frameworks describing when they would pause or add safeguards. A clear side-by-side comparison helps policymakers and researchers see where commitments are strong and where they are vague.</p>
+      <p class="res">Start with: <a href="https://metr.org/">METR research on frontier AI safety policies</a>, <a href="https://80000hours.org/problem-profiles/artificial-intelligence/">80,000 Hours: AI governance</a>.</p>
+    </li>
+    <li>
+      <div class="area">Governance</div>
+      <h2>How do the UK, EU and US define frontier or general-purpose AI, and what does each definition leave out?</h2>
+      <p>Laws only cover what they define. Comparing definitions across countries shows which systems fall through the gaps, and needs careful reading rather than technical skills.</p>
+      <p class="res">Start with: <a href="https://artificialintelligenceact.eu/">EU AI Act explorer</a>, <a href="https://www.aisi.gov.uk/">UK AI Security Institute</a>.</p>
+    </li>
+    <li>
+      <div class="area">Compute governance</div>
+      <h2>What would it take to track where large AI training runs happen?</h2>
+      <p>Training the most capable models needs huge amounts of computing power, which makes compute one of the few things governments can measure. Reviewing proposals for tracking it, and their practical problems, is a strong starter policy project.</p>
+      <p class="res">Start with: <a href="https://arxiv.org/abs/2402.08797">Computing Power and the Governance of AI (Sastry et al.)</a>, <a href="https://bluedot.org/">BlueDot Impact AI governance course</a>.</p>
+    </li>
+  </ol>
+  <p class="note">Got a question you think belongs here? Mention it when you sign up and we’ll consider adding it.</p>
+  <a class="cta" href="https://docs.google.com/forms/d/e/1FAIpQLSdmHTtx13CAIPE9tAMnrkUetPg1fFktIbesKEXKRQu8jyrQ9A/viewform">Find a research partner</a>
+  <div style="height:4rem"></div>
+</main>
+<footer class="wrap">
+  Built by Zebedi Casajuana with <a href="https://www.eacambridge.org/">EA Cambridge</a>. <a href="privacy.html">Privacy</a>
+</footer>
+</body>
+</html>
