@@ -232,6 +232,14 @@
   .prose p + p, .prose ul { margin-top: 0.75rem; }
   .prose ul { padding-left: 1.25rem; }
   .note { margin-block: 3rem; color: var(--ink-soft); max-width: 62ch; }
+  .qmeta { display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; margin-top: 0.9rem; font-size: 1rem; color: var(--ink-soft); }
+  .qmeta .qid { font-weight: 800; color: var(--ink); }
+  .qmeta .working { font-weight: 700; color: var(--ink); }
+  .pick { display: inline-block; margin-top: 1rem; font-weight: 700; font-size: 1.05rem; text-underline-offset: 0.25em; text-decoration-thickness: 2px; }
+  .researched { margin-top: 3.5rem; }
+  .researched h2.section-title, .open-title { font-weight: 800; font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1.15; margin-bottom: 0.75rem; }
+  .researched .intro { color: var(--ink-soft); max-width: 62ch; margin-bottom: 1.25rem; }
+  .live-note { color: var(--ink-soft); font-size: 1rem; max-width: 62ch; margin: 0 0 1.5rem; }
 </style>
 </head>
 <body>
@@ -252,7 +260,8 @@
   <p class="lede">Questions a small team can make real progress on in a term. Pick one when you sign up, or bring your own.</p>
 </header>
 <main class="wrap">
-  <ol class="qlist">
+  <p class="live-note" id="live-note">Each question has a number. When someone picks a question on the sign-up form, its interest count goes up, and once two groups are working on a question it moves to the “Being researched” section below.</p>
+  <ol class="qlist" id="open-list">
     <li>
       <div class="area">Interpretability</div>
       <h2>Can you find a feature in a small open model that tracks a simple concept?</h2>
@@ -303,11 +312,90 @@
     </li>
   </ol>
   <p class="note">Got a question you think belongs here? Mention it when you sign up and we’ll consider adding it.</p>
+  <p class="note">Looking for more? Two research funders publish lists of the questions they most want answered: <a href="https://coefficientgiving.org/?p=23777">Coefficient Giving’s technical AI safety research areas</a> and the <a href="https://alignmentproject.aisi.gov.uk/research-agenda">UK AI Security Institute’s Alignment Project research agenda</a>.</p>
+  <section class="researched" id="researched" aria-labelledby="researched-title" hidden>
+    <h2 class="section-title" id="researched-title">Being researched</h2>
+    <p class="intro">Two or more groups are already working on these. Pick another question, or mention one of these when you sign up if you’d like to join an existing group.</p>
+    <ol class="qlist" id="researched-list"></ol>
+  </section>
   <a class="cta" href="https://docs.google.com/forms/d/e/1FAIpQLSdmHTtx13CAIPE9tAMnrkUetPg1fFktIbesKEXKRQu8jyrQ9A/viewform">Find your team</a>
   <div style="height:4rem"></div>
 </main>
 <footer class="wrap">
   Built by Zebedi Casajuana with <a href="https://www.eacambridge.org/">EA Cambridge</a>. <a href="privacy.html">Privacy</a>
 </footer>
+<script>
+(function () {
+  var CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6_xOYEMg6qJRN7T0YQmxfVTwmA0s_-nVtD2c-uUv3pwshbpK7qbWv1ctTJPyZ3a-x8OeogAh5tSyj/pub?gid=0&single=true&output=csv";
+  var FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdmHTtx13CAIPE9tAMnrkUetPg1fFktIbesKEXKRQu8jyrQ9A/viewform";
+  var QUESTION_ENTRY = "entry.824615939";
+
+  function parseCSV(text) {
+    var rows = [], row = [], field = "", inQuotes = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text[i];
+      if (inQuotes) {
+        if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else { inQuotes = false; } }
+        else { field += c; }
+      } else if (c === '"') { inQuotes = true; }
+      else if (c === ",") { row.push(field); field = ""; }
+      else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+      else if (c !== "\r") { field += c; }
+    }
+    if (field !== "" || row.length) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function links(s) {
+    if (!s) return "";
+    var parts = s.split(/;\s*/).map(function (p) {
+      var m = p.match(/^(.*)\s\((https?:\/\/[^)]+)\)$/);
+      return m ? '<a href="' + esc(m[2]) + '">' + esc(m[1]) + "</a>" : esc(p);
+    });
+    return '<p class="res">Start with: ' + parts.join(", ") + ".</p>";
+  }
+
+  function item(q, researched) {
+    var interested = parseInt(q.interested, 10) || 0;
+    var groups = parseInt(q.groups, 10) || 0;
+    var meta = '<span class="qid">' + esc(q.id) + "</span>" +
+      "<span>" + interested + (interested === 1 ? " person" : " people") + " interested</span>";
+    if (groups === 1) meta += '<span class="working">1 group already working on this</span>';
+    if (groups >= 2) meta += '<span class="working">' + groups + " groups working on this</span>";
+    var pick = "";
+    if (!researched && q.option) {
+      pick = '<a class="pick" href="' + esc(FORM_URL + "?usp=pp_url&" + QUESTION_ENTRY + "=" + encodeURIComponent(q.option)) + '">Pick this question</a>';
+    }
+    return "<li>" +
+      '<div class="area">' + esc(q.area) + "</div>" +
+      "<h2>" + esc(q.question) + "</h2>" +
+      '<div class="qmeta">' + meta + "</div>" +
+      (q.why ? "<p>" + esc(q.why) + "</p>" : "") +
+      links(q.start) + pick + "</li>";
+  }
+
+  fetch(CSV_URL)
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function (text) {
+      var rows = parseCSV(text).slice(1).filter(function (r) { return /^Q\d+/.test(r[0] || "") && r[2]; });
+      if (!rows.length) return;
+      var qs = rows.map(function (r) {
+        return { id: r[0], area: r[1], question: r[2], why: r[3], start: r[4], option: r[5], interested: r[6], groups: r[7], status: r[8] };
+      });
+      var open = qs.filter(function (q) { return (parseInt(q.groups, 10) || 0) < 2; });
+      var done = qs.filter(function (q) { return (parseInt(q.groups, 10) || 0) >= 2; });
+      document.getElementById("open-list").innerHTML = open.map(function (q) { return item(q, false); }).join("");
+      if (done.length) {
+        document.getElementById("researched-list").innerHTML = done.map(function (q) { return item(q, true); }).join("");
+        document.getElementById("researched").hidden = false;
+      }
+    })
+    .catch(function () { /* keep the built-in list if the live data can’t load */ });
+})();
+</script>
 </body>
 </html>
