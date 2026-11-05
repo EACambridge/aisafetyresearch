@@ -240,6 +240,7 @@
   .researched h2.section-title, .open-title { font-weight: 800; font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1.15; margin-bottom: 0.75rem; }
   .researched .intro { color: var(--ink-soft); max-width: 62ch; margin-bottom: 1.25rem; }
   .live-note { color: var(--ink-soft); font-size: 1rem; max-width: 62ch; margin: 0 0 1.5rem; }
+  .qlist .team { margin-top: 0.6rem; font-size: 1rem; }
 </style>
 </head>
 <body>
@@ -359,6 +360,13 @@
     return '<p class="res">Start with: ' + parts.join(", ") + ".</p>";
   }
 
+  function teamsHtml(ts) {
+    if (!ts || !ts.length) return "";
+    return ts.map(function (t) {
+      return '<p class="team"><strong>Working on this:</strong> ' + esc(t.name) + (t.members ? " (" + esc(t.members) + ")" : "") + "</p>";
+    }).join("");
+  }
+
   function item(q, researched) {
     var interested = parseInt(q.interested, 10) || 0;
     var groups = parseInt(q.groups, 10) || 0;
@@ -375,16 +383,18 @@
       "<h2>" + esc(q.question) + "</h2>" +
       '<div class="qmeta">' + meta + "</div>" +
       (q.why ? "<p>" + esc(q.why) + "</p>" : "") +
-      links(q.start) + pick + "</li>";
+      teamsHtml(q.teams) + links(q.start) + pick + "</li>";
   }
 
   fetch(CSV_URL)
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
     .then(function (text) {
-      var rows = parseCSV(text).slice(1).filter(function (r) { return /^Q\d+/.test(r[0] || "") && r[2]; });
+      var all = parseCSV(text).slice(1);
+      var teams = all.filter(function (r) { return r[10] && r[11] && /^active$/i.test((r[12] || "").trim()); }).map(function (r) { return { name: r[10], qid: r[11].trim(), members: r[14] || "" }; });
+      var rows = all.filter(function (r) { return /^Q\d+/.test(r[0] || "") && r[2]; });
       if (!rows.length) return;
       var qs = rows.map(function (r) {
-        return { id: r[0], area: r[1], question: r[2], why: r[3], start: r[4], option: r[5], interested: r[6], groups: r[7], status: r[8] };
+        return { id: r[0], area: r[1], question: r[2], why: r[3], start: r[4], option: r[5], interested: r[6], groups: r[7], status: r[8], teams: teams.filter(function (t) { return t.qid === r[0]; }) };
       });
       var open = qs.filter(function (q) { return (parseInt(q.groups, 10) || 0) < 2; });
       var done = qs.filter(function (q) { return (parseInt(q.groups, 10) || 0) >= 2; });
