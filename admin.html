@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin | AI Safety Research</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script src="auth.js"></script>
+</head>
+<body>
+<header class="wrap page-head">
+  <a class="secondary" href="account.html">Back to your account</a>
+  <h1>Admin</h1>
+  <p class="lede">Review posts, manage teams and see what’s happening.</p>
+</header>
+<main class="wrap" id="app">
+  <section class="card"><h2>Write-ups waiting for review</h2><ul class="list" id="review"></ul></section>
+  <section class="card">
+    <h2>Teams</h2>
+    <form id="team-form" class="row" style="align-items:flex-end">
+      <div style="flex:2 1 14rem"><label for="tname">Team name</label><input type="text" id="tname" required placeholder="Team A"></div>
+      <div style="flex:1 1 8rem"><label for="tq">Question ID</label><input type="text" id="tq" placeholder="Q3"></div>
+      <button type="submit">Create team</button>
+    </form>
+    <ul class="list" id="teams" style="margin-top:1.5rem"></ul>
+  </section>
+  <section class="card"><h2>People</h2><ul class="list" id="people"></ul></section>
+  <section class="card"><h2>Recent activity</h2><ul class="list" id="events"></ul></section>
+</main>
+<script>
+(async function () {
+  var app = document.getElementById("app");
+  if (!asr.configured) { asr.notConfigured(app); return; }
+  var session = await asr.session();
+  if (!session) { location.href = "login.html"; return; }
+  var db = asr.client, esc = asr.esc;
+  var adm = await db.rpc("is_admin");
+  if (!adm.data) { app.innerHTML = '<p class="msg">This page is for admins only.</p>'; return; }
+
+  var people = [];
+  function label(p) { return (p.full_name || "No name yet") + " (" + (p.email || "") + ")"; }
+  function personById(id) { return people.find(function (p) { return p.id === id; }); }
+
+  async function loadPeople() {
+    var r = await db.from("profiles").select("*").order("created_at", { ascending: false });
+    people = r.data || [];
+    var vis = { full: "full name shown", first: "first name shown", anonymous: "anonymous" };
+    document.getElementById("people").innerHTML = people.map(function (p) {
+      return "<li><strong>" + esc(label(p)) + "</strong>" + '<div class="meta">' + esc(p.university || "No university given") + ", " + vis[p.name_visibility] + ", check-in emails " + (p.reminders_opt_in ? "on" : "off") + ", joined " + new Date(p.created_at).toLocaleDateString("en-GB") + "</div></li>";
+    }).join("") || "<li>No one has signed in yet.</li>";
+  }
+
+  async function loadReview() {
+    var r = await db.from("posts").select("*").eq("status", "submitted").order("created_at");
+    document.getElementById("review").innerHTML = (r.data || []).map(function (p) {
+      var who = personById(p.user_id);
+      return "<li><strong>" + esc(p.title || "Untitled write-up") + "</strong>" + '<div class="meta">By ' + esc(who ? label(who) : p.user_id) + ", " + new Date(p.created_at).toLocaleDateString("en-GB") + "</div><p>" + esc(p.body) + "</p>" + (p.link ? '<p><a href="' + esc(p.link) + '">' + esc(p.link) + "</a></p>" : "") +
+        '<div class="row"><button data-publish="' + p.id + '">Publish</button><button class="quiet" data-reject="' + p.id + '">Don’t publish</button></div></li>';
+    }).join("") || "<li>Nothing waiting for review.</li>";
+  }
+
+  async function loadTeams() {
+    var t = await db.from("teams").select("*").order("created_at", { ascending: false });
+    var m = await db.from("team_members").select("*");
+    var options = people.map(function (p) { return '<option value="' + p.id + '">' + esc(label(p)) + "</option>"; }).join("");
+    document.getElementById("teams").innerHTML = (t.data || []).map(function (x) {
+      var members = (m.data || []).filter(function (r) { return r.team_id === x.id; }).map(function (r) {
+        var p = personById(r.user_id);
+        return '<li style="border:0;padding:0.2rem 0">' + esc(p ? label(p) : r.user_id) + ' <button class="quiet" style="padding:0.2rem 0.6rem;margin:0 0 0 0.5rem" data-remove="' + x.id + "|" + r.user_id + '">Remove</button></li>';
+      }).join("");
+      return "<li><strong>" + esc(x.name) + "</strong>" + '<div class="meta">' + (x.question_id ? esc(x.question_id) + ", " : "") + (x.status === "active" ? "Active" : "Finished") + "</div>" +
+        '<ul class="list" style="margin-top:0.5rem">' + (members || '<li style="border:0;padding:0.2rem 0">No members yet</li>') + "</ul>" +
+        '<div class="row" style="align-items:center"><select data-add-select="' + x.id + '" style="flex:1 1 16rem"><option value="">Add a member…</option>' + options + "</select>" +
+        '<button data-add="' + x.id + '">Add</button><button class="quiet" data-status="' + x.id + "|" + (x.status === "active" ? "finished" : "active") + '">Mark ' + (x.status === "active" ? "finished" : "active") + "</button></div></li>";
+    }).join("") || "<li>No teams yet.</li>";
+  }
+
+  async function loadEvents() {
+    var r = await db.from("events").select("*").order("created_at", { ascending: false }).limit(50);
+    document.getElementById("events").innerHTML = (r.data || []).map(function (ev) {
+      var p = personById(ev.user_id);
+      return "<li>" + esc(p ? (p.full_name || p.email) : "Someone") + ": " + esc(ev.type.replace(/_/g, " ")) + ' <span class="meta">' + new Date(ev.created_at).toLocaleString("en-GB") + "</span></li>";
+    }).join("") || "<li>No activity yet.</li>";
+  }
+
+  async function refresh() { await loadPeople(); loadReview(); loadTeams(); loadEvents(); }
+
+  document.getElementById("team-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var r = await db.from("teams").insert({ name: document.getElementById("tname").value.trim(), question_id: document.getElementById("tq").value.trim().toUpperCase() || null });
+    if (r.error) { alert(r.error.message); return; }
+    e.target.reset(); loadTeams();
+  });
+
+  app.addEventListener("click", async function (e) {
+    var t = e.target, v;
+    if ((v = t.getAttribute("data-publish"))) { await db.from("posts").update({ status: "published" }).eq("id", v); loadReview(); }
+    else if ((v = t.getAttribute("data-reject"))) { await db.from("posts").update({ status: "rejected" }).eq("id", v); loadReview(); }
+    else if ((v = t.getAttribute("data-add"))) {
+      var sel = document.querySelector('[data-add-select="' + v + '"]');
+      if (!sel.value) return;
+      var r = await db.from("team_members").insert({ team_id: Number(v), user_id: sel.value });
+      if (r.error) alert(r.error.message); loadTeams();
+    }
+    else if ((v = t.getAttribute("data-remove"))) { var a = v.split("|"); await db.from("team_members").delete().eq("team_id", a[0]).eq("user_id", a[1]); loadTeams(); }
+    else if ((v = t.getAttribute("data-status"))) { var b = v.split("|"); await db.from("teams").update({ status: b[1] }).eq("id", b[0]); loadTeams(); }
+  });
+
+  refresh();
+})();
+</script>
+<footer class="wrap"><a href="index.html">Home</a><a href="questions.html">Questions</a><a href="projects.html">Projects</a><a href="privacy.html">Privacy</a></footer>
+</body>
+</html>
