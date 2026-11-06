@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in | AI Safety Research</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script src="auth.js"></script>
+</head>
+<body>
+<header class="wrap page-head">
+  <a class="secondary" href="index.html">Back to home</a>
+  <h1>Sign in</h1>
+  <p class="lede">Sign in to see your team, post check-ins and submit your research. We’ll email you a sign-in link, so there’s no password to remember.</p>
+</header>
+<main class="wrap" id="app">
+  <section class="card">
+    <form id="login-form">
+      <label for="email">Email address</label>
+      <input type="email" id="email" autocomplete="email" required>
+      <p class="hint">Use the same email you signed up with, if you have. By signing in you agree to how we use your details in our <a href="privacy.html">privacy notice</a>.</p>
+      <button type="submit">Email me a sign-in link</button>
+    </form>
+    <div id="status" aria-live="polite"></div>
+  </section>
+</main>
+<script>
+(async function () {
+  var card = document.querySelector("#app .card");
+  if (!asr.configured) { asr.notConfigured(card); return; }
+  if (await asr.session()) { location.href = "account.html"; return; }
+  document.getElementById("login-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var email = document.getElementById("email").value.trim();
+    var status = document.getElementById("status");
+    status.innerHTML = '<p class="msg">Sending…</p>';
+    var r = await asr.client.auth.signInWithOtp({ email: email, options: { emailRedirectTo: location.origin + "/account.html" } });
+    status.innerHTML = r.error
+      ? '<p class="msg">Something went wrong: ' + asr.esc(r.error.message) + "</p>"
+      : '<p class="msg">Check your inbox for a sign-in link. It may take a minute to arrive.</p>';
+  });
+})();
+</script>
+<footer class="wrap"><a href="index.html">Home</a><a href="questions.html">Questions</a><a href="projects.html">Projects</a><a href="privacy.html">Privacy</a></footer>
+</body>
+</html>
