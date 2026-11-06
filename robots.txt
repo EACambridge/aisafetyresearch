@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /login.html
+Disallow: /account.html
+Disallow: /admin.html
+
+Sitemap: https://aisafetyresearch.co.uk/sitemap.xml
