@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your account | AI Safety Research</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script src="auth.js"></script>
+</head>
+<body>
+<header class="wrap page-head">
+  <a class="secondary" href="index.html">Back to home</a>
+  <h1>Your account</h1>
+  <p class="lede" id="who">Loading…</p>
+</header>
+<main class="wrap" id="app">
+  <section class="card" id="details">
+    <h2>Your details</h2>
+    <form id="profile-form">
+      <label for="full_name">Your name</label>
+      <input type="text" id="full_name" autocomplete="name">
+      <fieldset class="radios">
+        <label style="font-weight:700;margin-top:1rem">Can we show your name on the website?</label>
+        <p class="hint">We recommend showing it: it shows other students that real people are doing this research and makes it easier for others to get in touch.</p>
+        <label><input type="radio" name="vis" value="full"> Yes, show my full name (recommended)</label>
+        <label><input type="radio" name="vis" value="first"> Show my first name only</label>
+        <label><input type="radio" name="vis" value="anonymous"> No, keep me anonymous</label>
+      </fieldset>
+      <label for="university">University (optional)</label>
+      <input type="text" id="university">
+      <label class="check"><input type="checkbox" id="reminders"> Send me check-in emails about my project</label>
+      <button type="submit">Save details</button>
+    </form>
+    <div id="profile-status" aria-live="polite"></div>
+  </section>
+
+  <section class="card">
+    <h2>Your team</h2>
+    <div id="teams"></div>
+  </section>
+
+  <section class="card">
+    <h2>Post an update</h2>
+    <form id="post-form">
+      <label for="kind">What are you posting?</label>
+      <select id="kind">
+        <option value="check-in">A check-in on how your project is going</option>
+        <option value="write-up">A write-up of your research</option>
+      </select>
+      <label for="team">Which team is it for? (optional)</label>
+      <select id="team"><option value="">No team</option></select>
+      <label for="title">Title</label>
+      <input type="text" id="title">
+      <label for="body">Your update</label>
+      <textarea id="body" required></textarea>
+      <label for="link">Link (optional)</label>
+      <input type="url" id="link" placeholder="https://">
+      <label class="check" id="submit-wrap"><input type="checkbox" id="submit-review"> Submit this write-up for review, so it can be published on the site</label>
+      <button type="submit">Post update</button>
+    </form>
+    <div id="post-status" aria-live="polite"></div>
+  </section>
+
+  <section class="card">
+    <h2>Your posts</h2>
+    <ul class="list" id="posts"></ul>
+  </section>
+
+  <section class="card">
+    <h2>Account</h2>
+    <div class="row">
+      <button class="quiet" id="signout">Sign out</button>
+      <button class="danger" id="delete">Delete my account</button>
+    </div>
+    <p class="hint">Deleting your account removes your profile, posts and activity record. It can’t be undone.</p>
+  </section>
+</main>
+<script>
+(async function () {
+  var app = document.getElementById("app");
+  if (!asr.configured) { asr.notConfigured(app); document.getElementById("who").textContent = ""; return; }
+  var session = await asr.session();
+  if (!session) { location.href = "login.html"; return; }
+  var db = asr.client, uid = session.user.id, esc = asr.esc;
+  document.getElementById("who").textContent = "Signed in as " + session.user.email;
+
+  var STATUS = { "private": "Only you can see this", submitted: "Submitted for review", published: "Published on the site", rejected: "Not published" };
+
+  async function loadProfile() {
+    var r = await db.from("profiles").select("*").eq("id", uid).single();
+    if (r.error) return;
+    var p = r.data;
+    document.getElementById("full_name").value = p.full_name || "";
+    document.getElementById("university").value = p.university || "";
+    document.getElementById("reminders").checked = !!p.reminders_opt_in;
+    var radio = document.querySelector('input[name="vis"][value="' + p.name_visibility + '"]');
+    if (radio && p.full_name) radio.checked = true;
+  }
+
+  async function loadTeams() {
+    var m = await db.from("team_members").select("team_id").eq("user_id", uid);
+    var box = document.getElementById("teams"), sel = document.getElementById("team");
+    var ids = (m.data || []).map(function (x) { return x.team_id; });
+    if (!ids.length) { box.innerHTML = "<p>You haven’t been added to a team yet. Once we match you, your team will show here.</p>"; return; }
+    var t = await db.from("teams").select("*").in("id", ids);
+    box.innerHTML = '<ul class="list">' + (t.data || []).map(function (x) {
+      return "<li><strong>" + esc(x.name) + "</strong>" + (x.question_id ? ' <span class="meta">working on <a href="questions.html">' + esc(x.question_id) + "</a></span>" : "") + '<div class="meta">' + (x.status === "active" ? "Active" : "Finished") + "</div></li>";
+    }).join("") + "</ul>";
+    (t.data || []).forEach(function (x) { var o = document.createElement("option"); o.value = x.id; o.textContent = x.name; sel.appendChild(o); });
+  }
+
+  async function loadPosts() {
+    var r = await db.from("posts").select("*").eq("user_id", uid).order("created_at", { ascending: false });
+    var ul = document.getElementById("posts");
+    if (!r.data || !r.data.length) { ul.innerHTML = "<li>You haven’t posted anything yet.</li>"; return; }
+    ul.innerHTML = r.data.map(function (p) {
+      return "<li><strong>" + esc(p.title || (p.kind === "check-in" ? "Check-in" : "Write-up")) + "</strong>" +
+        '<div class="meta">' + (p.kind === "check-in" ? "Check-in" : "Write-up") + ", " + new Date(p.created_at).toLocaleDateString("en-GB") + ". " + STATUS[p.status] + "</div>" +
+        "<p>" + esc(p.body).slice(0, 400) + "</p>" +
+        (p.status !== "published" ? '<button class="quiet" data-del="' + p.id + '">Delete</button>' : "") + "</li>";
+    }).join("");
+  }
+
+  document.getElementById("profile-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var vis = document.querySelector('input[name="vis"]:checked');
+    var st = document.getElementById("profile-status");
+    if (!vis) { st.innerHTML = '<p class="msg">Please choose whether we can show your name.</p>'; return; }
+    var r = await db.from("profiles").update({
+      full_name: document.getElementById("full_name").value.trim(),
+      name_visibility: vis.value,
+      university: document.getElementById("university").value.trim(),
+      reminders_opt_in: document.getElementById("reminders").checked
+    }).eq("id", uid);
+    st.innerHTML = '<p class="msg">' + (r.error ? "Couldn’t save: " + esc(r.error.message) : "Saved.") + "</p>";
+    if (!r.error) asr.log("profile_updated", { name_visibility: vis.value, reminders: document.getElementById("reminders").checked });
+  });
+
+  var kind = document.getElementById("kind"), submitWrap = document.getElementById("submit-wrap");
+  function toggleSubmit() { submitWrap.style.display = kind.value === "write-up" ? "flex" : "none"; }
+  kind.addEventListener("change", toggleSubmit); toggleSubmit();
+
+  document.getElementById("post-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var st = document.getElementById("post-status");
+    var isWriteUp = kind.value === "write-up";
+    var row = {
+      user_id: uid, kind: kind.value,
+      team_id: document.getElementById("team").value || null,
+      title: document.getElementById("title").value.trim() || null,
+      body: document.getElementById("body").value.trim(),
+      link: document.getElementById("link").value.trim() || null,
+      status: isWriteUp && document.getElementById("submit-review").checked ? "submitted" : "private"
+    };
+    var r = await db.from("posts").insert(row);
+    st.innerHTML = '<p class="msg">' + (r.error ? "Couldn’t post: " + esc(r.error.message) : (row.status === "submitted" ? "Posted and sent for review." : "Posted.")) + "</p>";
+    if (!r.error) { asr.log("posted", { kind: row.kind, status: row.status }); e.target.reset(); toggleSubmit(); loadPosts(); }
+  });
+
+  document.getElementById("posts").addEventListener("click", async function (e) {
+    var id = e.target.getAttribute("data-del");
+    if (!id || !confirm("Delete this post?")) return;
+    await db.from("posts").delete().eq("id", id).eq("user_id", uid);
+    loadPosts();
+  });
+
+  document.getElementById("signout").addEventListener("click", async function () {
+    await db.auth.signOut(); location.href = "index.html";
+  });
+  document.getElementById("delete").addEventListener("click", async function () {
+    if (!confirm("Delete your account and everything linked to it? This can’t be undone.")) return;
+    var r = await db.rpc("delete_my_account");
+    if (r.error) { alert("Couldn’t delete your account: " + r.error.message); return; }
+    await db.auth.signOut(); location.href = "index.html";
+  });
+
+  asr.log("opened_account");
+  loadProfile(); loadTeams(); loadPosts();
+})();
+</script>
+<footer class="wrap"><a href="index.html">Home</a><a href="questions.html">Questions</a><a href="projects.html">Projects</a><a href="privacy.html">Privacy</a></footer>
+</body>
+</html>
