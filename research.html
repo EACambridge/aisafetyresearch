@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research updates | AI Safety Research</title>
+<meta name="description" content="New AI safety papers and posts related to our research questions, collected every week with short summaries.">
+<link rel="canonical" href="https://aisafetyresearch.co.uk/research.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AI Safety Research">
+<meta property="og:title" content="Research updates | AI Safety Research">
+<meta property="og:description" content="New AI safety papers and posts related to our research questions, collected every week with short summaries.">
+<meta property="og:url" content="https://aisafetyresearch.co.uk/research.html">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #000000;
+    --ink-soft: #4d4d4d;
+    --rule: #d4d4d4;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #000000;
+      --ink: #ffffff;
+      --ink-soft: #b3b3b3;
+      --rule: #333333;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--paper); }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    font-variation-settings: "wdth" 100;
+    font-size: 1.125rem;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+  a { color: inherit; }
+  a:focus-visible, .cta:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+  .wrap { width: min(1120px, 100% - 3rem); margin-inline: auto; }
+  h1 {
+    font-variation-settings: "wdth" 68;
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: -0.02em;
+  }
+  .lede { margin-top: 2rem; font-size: clamp(1.25rem, 2.2vw, 1.6rem); line-height: 1.4; max-width: 30ch; }
+  .cta {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--paper);
+    text-decoration: none;
+    font-weight: 800;
+    font-variation-settings: "wdth" 85;
+    font-size: clamp(1.3rem, 2.4vw, 1.75rem);
+    padding: 1.1rem 2rem;
+    border-radius: 2px;
+    transition: transform 0.15s ease;
+  }
+  .cta:hover { transform: translateY(-2px); }
+  .secondary { font-weight: 700; font-size: 1.2rem; text-underline-offset: 0.25em; text-decoration-thickness: 2px; padding: 0.2rem 0.3rem; }
+  footer a + a, footer a:last-child { margin-left: 0.75rem; }
+  footer { border-top: 1px solid var(--rule); padding-block: 2rem 3rem; font-size: 0.85rem; color: var(--ink-soft); }
+  .page-head { padding-block: 4rem 2.5rem; }
+  .page-head h1 { margin-top: 2.5rem; max-width: 12ch; font-size: clamp(3rem, 8vw, 6.5rem); }
+  .qlist { list-style: none; border-top: 1px solid var(--rule); }
+  .qlist > li { padding-block: 2.25rem; border-bottom: 1px solid var(--rule); }
+  .area { color: var(--ink-soft); font-weight: 700; font-size: 1rem; }
+  .qlist h2 { font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 1.9rem); line-height: 1.2; max-width: 34ch; margin-top: 0.25rem; }
+  .qlist p { max-width: 62ch; margin-top: 0.75rem; }
+  .qlist .res { color: var(--ink-soft); font-size: 1rem; }
+  .status { color: var(--ink-soft); font-size: 1rem; margin-top: 0.5rem; }
+  .qlist dl { max-width: 62ch; margin-top: 1rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.6rem; }
+  .qlist dt { font-weight: 700; }
+  .qlist dd { margin: 0 0 0.4rem; }
+  @media (min-width: 720px) { .qlist dl { grid-template-columns: 9rem minmax(0, 1fr); gap: 0.6rem 1.5rem; } .qlist dd { margin: 0; } }
+  .note { margin-block: 3rem; color: var(--ink-soft); max-width: 62ch; }
+  .submit { margin-top: 1.5rem; padding-top: 3rem; border-top: 1px solid var(--rule); }
+  .submit h2 { font-weight: 800; font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1.15; }
+  .submit p { max-width: 62ch; margin: 0.75rem 0 1.75rem; }
+  @media (prefers-reduced-motion: reduce) { .cta { transition: none; } .cta:hover { transform: none; } }
+  .week { margin-top: 3.5rem; }
+  .week:first-of-type { margin-top: 0; }
+  .week > h2 { font-weight: 800; font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1.15; margin-bottom: 1.25rem; }
+  .qlist h3 { font-weight: 800; font-size: clamp(1.2rem, 2.2vw, 1.5rem); line-height: 1.25; max-width: 40ch; margin-top: 0.25rem; }
+  .qlist h3 a { text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+  .ai-note { margin-bottom: 3rem; padding-left: 1rem; border-left: 3px solid var(--ink); max-width: 62ch; color: var(--ink-soft); }
+  .ai-note strong { color: var(--ink); }
+  .empty { padding-block: 2rem 4rem; max-width: 62ch; }
+</style>
+</head>
+<body>
+<header class="wrap page-head">
+  <a class="secondary" href="index.html">Back to home</a>
+  <h1>Research updates</h1>
+  <p class="lede">New papers and posts related to our research questions, collected every week.</p>
+</header>
+<main class="wrap">
+  <p class="ai-note"><strong>Summaries are written by AI.</strong> Google’s Gemini reads each paper’s abstract or post and writes a short summary, and a person checks them before they appear here. Read the original before relying on anything it says.</p>
+  <div id="updates">
+    <p class="empty">The first weekly update will appear here soon. Until then, <a href="questions.html">browse the research questions</a>.</p>
+  </div>
+  <p class="note">We check arXiv, the Alignment Forum and LessWrong every Monday. Know something we missed? Mention it when you <a href="https://docs.google.com/forms/d/e/1FAIpQLScJ7AURQHiuJz4_b1uiiulmhQlLBN0wftGoZ9gk-mytHL8lzQ/viewform">submit your research</a>.</p>
+</main>
+<footer class="wrap">
+  Built by Zebedi Casajuana with <a href="https://www.eacambridge.org/">EA Cambridge</a>. <a href="login.html">Sign in</a> <a href="privacy.html">Privacy</a>
+</footer>
+<script>
+(function () {
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function day(iso) {
+    var d = new Date(iso + "T12:00:00Z");
+    return isNaN(d) ? esc(iso) : d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+  }
+  function safeUrl(u) { return /^https:\/\//.test(u || "") ? u : "#"; }
+  fetch("data/research-updates.json?v=" + Date.now())
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (data) {
+      var weeks = (data && data.weeks) || [];
+      if (!weeks.length) return;
+      document.getElementById("updates").innerHTML = weeks.map(function (w) {
+        return '<section class="week"><h2>Week of ' + day(w.week_of) + '</h2><ul class="qlist">' +
+          (w.items || []).map(function (it) {
+            var qs = (it.questions || []).map(function (q) {
+              return '<a href="questions.html#' + esc(q.toLowerCase()) + '">' + esc(q) + "</a>";
+            }).join(", ");
+            return "<li>" +
+              '<div class="area">' + esc(it.source) + ", " + day(it.published) + (it.authors ? ". " + esc(it.authors) : "") + "</div>" +
+              '<h3><a href="' + esc(safeUrl(it.url)) + '">' + esc(it.title) + "</a></h3>" +
+              "<p>" + esc(it.summary) + "</p>" +
+              (qs ? '<p class="res">Related to ' + qs + ".</p>" : "") +
+              "</li>";
+          }).join("") + "</ul></section>";
+      }).join("");
+    })
+    .catch(function () { /* keep the message above if the updates can’t load */ });
+})();
+</script>
+</body>
+</html>
