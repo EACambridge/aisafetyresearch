@@ -1,0 +1,52 @@
+name: Weekly research updates
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"   # Mondays, 07:00 UTC
+  workflow_dispatch:       # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: research-updates
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Collect and summarise new research
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+        run: python scripts/research_updates.py
+
+      - name: Open a pull request for review
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- data/research-updates.json; then
+            echo "Nothing new matched our questions this week, so there is nothing to review."
+            exit 0
+          fi
+          DAY="$(date -u +%Y-%m-%d)"
+          BRANCH="research-updates/${DAY}-${{ github.run_number }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add data/research-updates.json
+          git commit -m "Research updates for the week of ${DAY}"
+          git push origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "Research updates: week of $(date -u '+%-d %B %Y')" \
+            --body-file pr-body.md \
+          || echo "::warning::Could not open the pull request automatically. Open it by hand from the ${BRANCH} branch."
