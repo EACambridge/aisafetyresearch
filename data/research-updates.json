@@ -1,4 +1,22 @@
 {
-  "updated": null,
-  "weeks": []
+  "updated": "2026-11-07",
+  "weeks": [
+    {
+      "week_of": "2026-11-07",
+      "model": "gemini-3.8-flash",
+      "items": [
+        {
+          "title": "Encoding and Propagation of Grammatical Number in Large Language Models",
+          "url": "https://arxiv.org/abs/2611.07283",
+          "source": "arXiv",
+          "authors": "Jacob Solinsky, Serguei Pakhomov",
+          "published": "2026-11-05",
+          "questions": [
+            "Q1"
+          ],
+          "summary": "The authors trained sparse autoencoders on Pythia-70M to examine how grammatical number agreement is represented and processed inside a small language model. They identified features that track plural nouns and subjects and drive the generation of plural verbs. Intervening to remove these features from the hidden states of plural subject nouns caused the model to produce singular verbs instead, whilst corresponding singular features were less effective."
+        }
+      ]
+    }
+  ]
 }
