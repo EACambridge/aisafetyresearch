@@ -248,6 +248,10 @@
   .researched .intro { color: var(--ink-soft); max-width: 62ch; margin-bottom: 1.25rem; }
   .live-note { color: var(--ink-soft); font-size: 1rem; max-width: 62ch; margin: 0 0 1.5rem; }
   .qlist .team { margin-top: 0.6rem; font-size: 1rem; }
+  .recent { margin-top: 1rem; font-size: 1rem; max-width: 62ch; }
+  .recent ul { list-style: none; margin-top: 0.35rem; }
+  .recent li + li { margin-top: 0.3rem; }
+  .recent .src { color: var(--ink-soft); }
 </style>
 </head>
 <body>
@@ -268,7 +272,7 @@
   <p class="lede">Questions a small team can make real progress on in a term. Pick one when you sign up, or bring your own.</p>
 </header>
 <main class="wrap">
-  <p class="live-note" id="live-note">Each question has a number. When someone picks a question on the sign-up form, its interest count goes up, and once two groups are working on a question it moves to the “Being researched” section below.</p>
+  <p class="live-note" id="live-note">Each question has a number. When someone picks a question on the sign-up form, its interest count goes up, and once two groups are working on a question it moves to the “Being researched” section below. Recent papers and posts on each question come from our weekly <a href="research.html">research updates</a>.</p>
   <ol class="qlist" id="open-list">
     <li>
       <div class="area">Interpretability</div>
@@ -374,6 +378,14 @@
     }).join("");
   }
 
+  function recentHtml(list) {
+    if (!list || !list.length) return "";
+    return '<div class="recent"><strong>Recent related work</strong><ul>' + list.slice(0, 3).map(function (it) {
+      var url = /^https:\/\//.test(it.url || "") ? it.url : "#";
+      return '<li><a href="' + esc(url) + '">' + esc(it.title) + '</a> <span class="src">(' + esc(it.source) + ')</span></li>';
+    }).join("") + '</ul><a href="research.html">Summaries in the research updates</a></div>';
+  }
+
   function item(q, researched) {
     var interested = parseInt(q.interested, 10) || 0;
     var groups = parseInt(q.groups, 10) || 0;
@@ -385,23 +397,32 @@
     if (!researched && q.option) {
       pick = '<a class="pick" href="' + esc(FORM_URL + "?usp=pp_url&" + QUESTION_ENTRY + "=" + encodeURIComponent(q.option)) + '">Pick this question</a>';
     }
-    return "<li>" +
+    return '<li id="' + esc(String(q.id).toLowerCase()) + '">' +
       '<div class="area">' + esc(q.area) + "</div>" +
       "<h2>" + esc(q.question) + "</h2>" +
       '<div class="qmeta">' + meta + "</div>" +
       (q.why ? "<p>" + esc(q.why) + "</p>" : "") +
-      teamsHtml(q.teams) + links(q.start) + pick + "</li>";
+      teamsHtml(q.teams) + recentHtml(q.recent) + links(q.start) + pick + "</li>";
   }
 
-  fetch(CSV_URL)
-    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
-    .then(function (text) {
+  var updates = fetch("data/research-updates.json?v=" + Date.now())
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .catch(function () { return null; });
+
+  Promise.all([fetch(CSV_URL).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); }), updates])
+    .then(function (res) {
+      var text = res[0], recent = {};
+      ((res[1] && res[1].weeks) || []).forEach(function (w) {
+        (w.items || []).forEach(function (it) {
+          (it.questions || []).forEach(function (q) { (recent[q] = recent[q] || []).push(it); });
+        });
+      });
       var all = parseCSV(text).slice(1);
       var teams = all.filter(function (r) { return r[10] && r[11] && /^active$/i.test((r[12] || "").trim()); }).map(function (r) { return { name: r[10], qid: r[11].trim(), members: r[14] || "" }; });
       var rows = all.filter(function (r) { return /^Q\d+/.test(r[0] || "") && r[2]; });
       if (!rows.length) return;
       var qs = rows.map(function (r) {
-        return { id: r[0], area: r[1], question: r[2], why: r[3], start: r[4], option: r[5], interested: r[6], groups: r[7], status: r[8], teams: teams.filter(function (t) { return t.qid === r[0]; }) };
+        return { id: r[0], area: r[1], question: r[2], why: r[3], start: r[4], option: r[5], interested: r[6], groups: r[7], status: r[8], teams: teams.filter(function (t) { return t.qid === r[0]; }), recent: recent[r[0]] || [] };
       });
       var open = qs.filter(function (q) { return (parseInt(q.groups, 10) || 0) < 2; });
       var done = qs.filter(function (q) { return (parseInt(q.groups, 10) || 0) >= 2; });
@@ -409,6 +430,10 @@
       if (done.length) {
         document.getElementById("researched-list").innerHTML = done.map(function (q) { return item(q, true); }).join("");
         document.getElementById("researched").hidden = false;
+      }
+      if (location.hash) {
+        var target = document.getElementById(location.hash.slice(1));
+        if (target) target.scrollIntoView();
       }
     })
     .catch(function () { /* keep the built-in list if the live data can’t load */ });
