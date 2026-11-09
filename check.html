@@ -339,7 +339,10 @@
 
     if (data.results && data.results.length) {
       var ol = el('ol', 'results');
-      data.results.forEach(function (r) {
+      var RANK = { 'same investigation': 0, 'overlapping': 1, 'partly overlapping': 2 };
+      data.results.map(function (r, i) { return { r: r, i: i }; }).sort(function (a, b) {
+        return ((RANK[a.r.match] || 2) - (RANK[b.r.match] || 2)) || (a.i - b.i);
+      }).map(function (x) { return x.r; }).forEach(function (r) {
         var url = safeUrl(r.url);
         if (!url) return;
         var li = el('li');
