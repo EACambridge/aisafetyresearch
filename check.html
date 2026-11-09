@@ -341,7 +341,8 @@
       var ol = el('ol', 'results');
       var RANK = { 'same investigation': 0, 'overlapping': 1, 'partly overlapping': 2 };
       data.results.map(function (r, i) { return { r: r, i: i }; }).sort(function (a, b) {
-        return ((RANK[a.r.match] || 2) - (RANK[b.r.match] || 2)) || (a.i - b.i);
+        var ra = a.r.match in RANK ? RANK[a.r.match] : 2, rb = b.r.match in RANK ? RANK[b.r.match] : 2;
+        return (ra - rb) || (a.i - b.i);
       }).map(function (x) { return x.r; }).forEach(function (r) {
         var url = safeUrl(r.url);
         if (!url) return;
