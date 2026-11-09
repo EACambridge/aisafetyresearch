@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Check your idea | AI Safety Research</title>
+<meta name="description" content="Find a research team, pick a well-scoped AI safety question and see what’s already being researched. Free, for students.">
+<link rel="canonical" href="https://aisafetyresearch.co.uk/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AI Safety Research">
+<meta property="og:title" content="AI Safety Research: start this week">
+<meta property="og:description" content="Find a research team, pick a well-scoped AI safety question and see what’s already being researched. Free, for students.">
+<meta property="og:url" content="https://aisafetyresearch.co.uk/">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #000000;
+    --ink-soft: #4d4d4d;
+    --rule: #d4d4d4;
+    --stroke: #000000;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #000000;
+      --ink: #ffffff;
+      --ink-soft: #b3b3b3;
+      --rule: #333333;
+      --stroke: #ffffff;
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { background: var(--paper); }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    font-variation-settings: "wdth" 100;
+    font-size: 1.125rem;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+
+  a { color: inherit; }
+  a:focus-visible, .cta:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 4px;
+  }
+
+  .wrap {
+    width: min(1120px, 100% - 3rem);
+    margin-inline: auto;
+  }
+
+  /* Hero: the most relevant thing, so the biggest thing */
+  .hero {
+    position: relative;
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 5rem 4rem;
+  }
+  .slash-hero {
+    position: absolute;
+    top: 38%;
+    right: -22%;
+    width: 80%;
+    max-width: 1100px;
+    color: var(--stroke);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .hero-text { position: relative; z-index: 1; }
+  h1 {
+    font-variation-settings: "wdth" 68;
+    font-weight: 900;
+    font-size: clamp(2.6rem, 7vw, 6rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    max-width: 12ch;
+  }
+  .lede {
+    margin-top: 2rem;
+    font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+    line-height: 1.4;
+    max-width: 30ch;
+    background: var(--paper);
+    padding: 0.25rem 0.5rem 0.25rem 0;
+  }
+  .cta {
+    display: inline-block;
+    margin-top: 2.5rem;
+    background: var(--ink);
+    color: var(--paper);
+    text-decoration: none;
+    font-weight: 800;
+    font-variation-settings: "wdth" 85;
+    font-size: clamp(1.3rem, 2.4vw, 1.75rem);
+    padding: 1.1rem 2rem;
+    border-radius: 2px;
+    transition: transform 0.15s ease;
+  }
+  .cta:hover { transform: translateY(-2px); }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 2rem;
+    margin-top: 2.5rem;
+  }
+  .actions .cta { margin-top: 0; }
+  .secondary {
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-underline-offset: 0.25em;
+    text-decoration-thickness: 2px;
+    background: var(--paper);
+    padding: 0.2rem 0.3rem;
+  }
+  .secondary:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+
+  /* Research tracker: second most relevant */
+  .research { padding-block: 5rem; border-top: 1px solid var(--rule); }
+  .research h2 {
+    font-variation-settings: "wdth" 75;
+    font-weight: 800;
+    font-size: clamp(2rem, 4.5vw, 3.25rem);
+    line-height: 1;
+    margin-bottom: 1rem;
+  }
+  .research p { color: var(--ink-soft); max-width: 55ch; }
+
+  /* Learning resources: useful, a step down from the tracker */
+  .learn { padding-block: 4rem; border-top: 1px solid var(--rule); }
+  .learn h2 {
+    font-variation-settings: "wdth" 75;
+    font-weight: 800;
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    line-height: 1.05;
+    margin-bottom: 0.75rem;
+  }
+  .learn-intro { color: var(--ink-soft); max-width: 55ch; margin-bottom: 2rem; }
+  .learn ul {
+    list-style: none;
+    display: grid;
+    gap: 1.25rem 2.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  .learn li a {
+    display: block;
+    font-weight: 800;
+    font-size: 1.2rem;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 2px;
+  }
+  .learn li span { display: block; color: var(--ink-soft); font-size: 1rem; margin-top: 0.25rem; max-width: 36ch; }
+
+  /* Why: supporting detail, smaller again */
+  .why {
+    position: relative;
+    padding-block: 4rem 5rem;
+    border-top: 1px solid var(--rule);
+  }
+  .slash-why {
+    position: absolute;
+    left: -14%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 52%;
+    max-width: 620px;
+    color: var(--stroke);
+    opacity: 0.9;
+    pointer-events: none;
+  }
+  .why-text {
+    position: relative;
+    max-width: 62ch;
+    margin-left: auto;
+    background: var(--paper);
+    padding: 1rem 0 1rem 1.5rem;
+  }
+  .why h2 {
+    font-weight: 800;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .why p + p { margin-top: 1rem; }
+
+  /* Join */
+  .join { padding-block: 4rem; border-top: 1px solid var(--rule); }
+  .join h2 {
+    font-variation-settings: "wdth" 75;
+    font-weight: 800;
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    margin-bottom: 0.75rem;
+  }
+  .join p { max-width: 55ch; color: var(--ink-soft); }
+  .join .cta { margin-top: 1.75rem; }
+  footer a + a, footer a:last-child { margin-left: 0.75rem; }
+
+  /* Footer: least relevant, smallest */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-block: 2rem 3rem;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta { transition: none; }
+    .cta:hover { transform: none; }
+  }
+  @media (max-width: 640px) {
+    .slash-hero { right: -40%; width: 140%; top: auto; bottom: 2%; }
+    .slash-why { width: 90%; left: -30%; top: auto; bottom: 0; transform: none; opacity: 0.25; }
+    .why-text { padding-left: 0; }
+  }
+</style>
+<style>
+  .page-head { padding-block: 4rem 2rem; }
+  .page-head h1 { margin-top: 2.5rem; max-width: 14ch; font-size: clamp(3rem, 8vw, 6.5rem); }
+  .page-head .lede { background: none; max-width: 40ch; }
+  .checker { padding-bottom: 3rem; }
+  .checker label { display: block; font-weight: 800; font-size: 1.25rem; margin-bottom: 0.5rem; }
+  .checker .hint { color: var(--ink-soft); font-size: 1rem; max-width: 62ch; margin-bottom: 1rem; }
+  .checker textarea {
+    width: 100%; min-height: 9rem; resize: vertical;
+    font: inherit; color: var(--ink); background: var(--paper);
+    border: 2px solid var(--ink); border-radius: 2px; padding: 0.9rem 1rem;
+  }
+  .checker textarea:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .checker .row { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; margin-top: 1.25rem; }
+  .checker button.cta { border: 0; cursor: pointer; margin-top: 0; font-family: inherit; }
+  .checker button.cta[disabled] { opacity: 0.55; cursor: progress; }
+  .count { color: var(--ink-soft); font-size: 0.95rem; }
+  .privacy-note { color: var(--ink-soft); font-size: 0.95rem; max-width: 62ch; margin-top: 1rem; }
+  #status { margin-top: 2rem; font-weight: 700; min-height: 1.5em; }
+  .verdict { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--rule); }
+  .verdict h2 {
+    font-variation-settings: "wdth" 75; font-weight: 900;
+    font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.02; max-width: 18ch;
+  }
+  .verdict p { max-width: 62ch; margin-top: 1rem; font-size: 1.2rem; }
+  .ai-label { display: inline-block; margin-top: 1rem; font-size: 0.85rem; font-weight: 700;
+    border: 1px solid var(--ink); padding: 0.15rem 0.5rem; border-radius: 2px; }
+  .results { list-style: none; margin-top: 2rem; border-top: 1px solid var(--rule); }
+  .results li { padding-block: 1.5rem; border-bottom: 1px solid var(--rule); }
+  .match { font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .match.same { background: var(--ink); color: var(--paper); padding: 0.1rem 0.4rem; }
+  .results a.title { display: block; font-weight: 800; font-size: 1.3rem; line-height: 1.25; margin-top: 0.35rem;
+    text-underline-offset: 0.2em; text-decoration-thickness: 2px; max-width: 50ch; }
+  .meta { color: var(--ink-soft); font-size: 0.95rem; margin-top: 0.25rem; }
+  .rel { margin-top: 0.5rem; max-width: 62ch; }
+  .more { margin-top: 2rem; color: var(--ink-soft); max-width: 62ch; }
+  .more a { color: var(--ink); font-weight: 700; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="rough" x="-5%" y="-40%" width="110%" height="180%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.004 0.08" numOctaves="2" seed="4" result="edge"/>
+      <feDisplacementMap in="SourceGraphic" in2="edge" scale="22" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.002 0.35" numOctaves="2" seed="9" result="bristle"/>
+      <feColorMatrix in="bristle" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.9" result="gaps"/>
+      <feComposite in="shape" in2="gaps" operator="in"/>
+    </filter>
+  </defs>
+</svg>
+<header class="wrap page-head">
+  <a class="secondary" href="index.html">Back to home</a>
+  <h1>Check your idea</h1>
+  <p class="lede">Describe a research idea and we’ll find any papers that might already be doing the same investigation, so you know what to read before you start.</p>
+</header>
+
+<main class="wrap checker">
+  <form id="check-form" novalidate>
+    <label for="idea">Your research idea</label>
+    <p class="hint">A few sentences is plenty: what you want to find out, and roughly how. For example: “Measure how often small open models change a correct answer when a user pushes back, and whether this gets worse with model size.”</p>
+    <textarea id="idea" name="idea" maxlength="1500" required></textarea>
+    <div class="row">
+      <button class="cta" type="submit" id="go">Check for overlapping research</button>
+      <span class="count" id="count">0 / 1500</span>
+    </div>
+    <p class="privacy-note">Your idea is sent to Google’s Gemini to search and compare papers. On the free service we use, Google may use what you type to improve its products, so please don’t include anything confidential. We don’t store your idea. <a href="privacy.html">Privacy</a></p>
+  </form>
+
+  <p id="status" role="status" aria-live="polite"></p>
+  <div id="results"></div>
+</main>
+
+<script>
+(function () {
+  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbzUru24n7YM2lSBUG56bYrszVLsvKVMcVp4yd9a7kHhp6E8cCK3BUo7obgZqYCIjM9xcw/exec';
+  var form = document.getElementById('check-form');
+  var idea = document.getElementById('idea');
+  var go = document.getElementById('go');
+  var count = document.getElementById('count');
+  var statusEl = document.getElementById('status');
+  var out = document.getElementById('results');
+
+  var HEADINGS = {
+    same: 'Someone has already done this investigation.',
+    overlap: 'Others have investigated part of this.',
+    none: 'We didn’t find anyone doing this investigation.'
+  };
+
+  idea.addEventListener('input', function () { count.textContent = idea.value.length + ' / 1500'; });
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text) e.textContent = text;
+    return e;
+  }
+
+  function safeUrl(u) {
+    return /^https:\/\//.test(String(u || '')) ? u : null;
+  }
+
+  function render(data) {
+    out.innerHTML = '';
+    var v = el('section', 'verdict');
+    v.setAttribute('aria-labelledby', 'verdict-title');
+    var h = el('h2', '', HEADINGS[data.verdict] || HEADINGS.none);
+    h.id = 'verdict-title';
+    v.appendChild(h);
+    if (data.summary) v.appendChild(el('p', '', data.summary));
+    v.appendChild(el('span', 'ai-label', 'Written by AI. Always read the papers themselves.'));
+    out.appendChild(v);
+
+    if (data.results && data.results.length) {
+      var ol = el('ol', 'results');
+      data.results.forEach(function (r) {
+        var url = safeUrl(r.url);
+        if (!url) return;
+        var li = el('li');
+        li.appendChild(el('span', 'match' + (r.match === 'same investigation' ? ' same' : ''), r.match));
+        var a = el('a', 'title', r.title);
+        a.href = url; a.target = '_blank'; a.rel = 'noopener';
+        li.appendChild(a);
+        var meta = [r.authors, r.year, r.source].filter(Boolean).join(' · ');
+        if (meta) li.appendChild(el('p', 'meta', meta));
+        if (r.why) li.appendChild(el('p', 'rel', r.why));
+        ol.appendChild(li);
+      });
+      out.appendChild(ol);
+    }
+
+    var more = el('p', 'more');
+    more.appendChild(document.createTextNode('This searches academic paper databases, including arXiv. Much AI safety work is posted on forums instead, so also search '));
+    var f = data.forumSearch || {};
+    var af = el('a', '', 'the Alignment Forum'); af.href = safeUrl(f.alignmentForum) || 'https://www.alignmentforum.org/'; af.target = '_blank'; af.rel = 'noopener';
+    var lw = el('a', '', 'LessWrong'); lw.href = safeUrl(f.lessWrong) || 'https://www.lesswrong.com/'; lw.target = '_blank'; lw.rel = 'noopener';
+    more.appendChild(af);
+    more.appendChild(document.createTextNode(' and '));
+    more.appendChild(lw);
+    more.appendChild(document.createTextNode('. You can also browse '));
+    var pr = el('a', '', 'current projects on this site'); pr.href = 'projects.html';
+    more.appendChild(pr);
+    more.appendChild(document.createTextNode('.'));
+    if (data.sourceProblems && data.sourceProblems.length) {
+      more.appendChild(document.createTextNode(' Note: ' + data.sourceProblems.join(' and ') + ' didn’t respond this time, so results may be incomplete.'));
+    }
+    out.appendChild(more);
+
+    h.setAttribute('tabindex', '-1');
+    h.focus();
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var text = idea.value.trim();
+    if (text.length < 30) {
+      statusEl.textContent = 'Please describe your idea in at least a sentence or two.';
+      idea.focus();
+      return;
+    }
+    go.disabled = true;
+    out.innerHTML = '';
+    statusEl.textContent = 'Searching for related papers. This usually takes about 10 seconds.';
+    fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ idea: text })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data || !data.ok) {
+          statusEl.textContent = (data && data.error) || 'Something went wrong. Please try again in a minute.';
+          return;
+        }
+        statusEl.textContent = '';
+        render(data);
+      })
+      .catch(function () {
+        statusEl.textContent = 'We couldn’t reach the checker. Please check your connection and try again.';
+      })
+      .then(function () { go.disabled = false; });
+  });
+})();
+</script>
+
+<footer class="wrap">
+  Built by Zebedi Casajuana with <a href="https://www.eacambridge.org/">EA Cambridge</a>. <a href="login.html">Sign in</a> <a href="privacy.html">Privacy</a>
+</footer>
+</body>
+</html>
