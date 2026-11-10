@@ -259,6 +259,7 @@
     text-underline-offset: 0.2em; text-decoration-thickness: 2px; max-width: 50ch; }
   .meta { color: var(--ink-soft); font-size: 0.95rem; margin-top: 0.25rem; }
   .rel { margin-top: 0.5rem; max-width: 62ch; }
+  .verdict .lead a { color: var(--ink); font-weight: 800; text-underline-offset: 0.2em; text-decoration-thickness: 2px; }
   .more { margin-top: 2rem; color: var(--ink-soft); max-width: 62ch; }
   .more a { color: var(--ink); font-weight: 700; }
 </style>
@@ -333,6 +334,20 @@
     var h = el('h2', '', HEADINGS[data.verdict] || HEADINGS.none);
     h.id = 'verdict-title';
     v.appendChild(h);
+    var linked = (data.results || []).filter(function (r) { return safeUrl(r.url); });
+    var best = linked.filter(function (r) { return r.match === 'same investigation'; });
+    if (!best.length) best = linked.filter(function (r) { return r.match === 'overlapping'; }).slice(0, 1);
+    if (best.length) {
+      var lead = el('p', 'lead');
+      lead.appendChild(document.createTextNode(best.length > 1 ? 'Read these first: ' : 'Read this first: '));
+      best.forEach(function (r, i) {
+        if (i) lead.appendChild(document.createTextNode(i === best.length - 1 ? ' and ' : ', '));
+        var a = el('a', '', r.title);
+        a.href = r.url; a.target = '_blank'; a.rel = 'noopener';
+        lead.appendChild(a);
+      });
+      v.appendChild(lead);
+    }
     if (data.summary) v.appendChild(el('p', '', data.summary));
     v.appendChild(el('span', 'ai-label', 'Written by AI. Always read the papers themselves.'));
     out.appendChild(v);
