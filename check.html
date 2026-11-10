@@ -261,6 +261,16 @@
   .rel { margin-top: 0.5rem; max-width: 62ch; }
   .verdict .lead a { color: var(--ink); font-weight: 800; text-underline-offset: 0.2em; text-decoration-thickness: 2px; }
   .more { margin-top: 2rem; color: var(--ink-soft); max-width: 62ch; }
+  .also { margin-top: 2.5rem; }
+  .also h3 { font-weight: 800; font-size: 1.2rem; }
+  .also ul { list-style: none; margin-top: 0.75rem; }
+  .also li { padding-block: 0.35rem; }
+  .also li a { font-weight: 700; text-underline-offset: 0.2em; }
+  .also li .meta { display: inline; margin: 0; }
+  .next { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--rule); }
+  .next h3 { font-variation-settings: "wdth" 75; font-weight: 900; font-size: clamp(1.6rem, 3.5vw, 2.4rem); line-height: 1.05; }
+  .next p { margin-top: 0.5rem; max-width: 55ch; }
+  .next .cta { margin-top: 1.25rem; }
   .more a { color: var(--ink); font-weight: 700; }
 </style>
 </head>
@@ -308,9 +318,10 @@
   var statusEl = document.getElementById('status');
   var out = document.getElementById('results');
 
+  var FORM = 'https://docs.google.com/forms/d/e/1FAIpQLSdmHTtx13CAIPE9tAMnrkUetPg1fFktIbesKEXKRQu8jyrQ9A/viewform';
   var HEADINGS = {
-    same: 'Someone has already done this investigation.',
-    overlap: 'Others have investigated part of this.',
+    same: 'This has been studied. Start by reading it, then build on it.',
+    overlap: 'Others have studied part of this. Build on their work.',
     none: 'We didn’t find anyone doing this investigation.'
   };
 
@@ -373,6 +384,35 @@
       });
       out.appendChild(ol);
     }
+
+    if (data.alsoRelevant && data.alsoRelevant.length) {
+      var ar = el('section', 'also');
+      ar.appendChild(el('h3', '', 'Also possibly relevant'));
+      ar.appendChild(el('p', 'meta', 'Other top search results the AI didn’t pick. Skim the titles in case it missed something.'));
+      var ul = el('ul');
+      data.alsoRelevant.forEach(function (r) {
+        var u = safeUrl(r.url);
+        if (!u) return;
+        var li = el('li');
+        var a = el('a', '', r.title);
+        a.href = u; a.target = '_blank'; a.rel = 'noopener';
+        li.appendChild(a);
+        var meta = [r.year, r.source].filter(Boolean).join(' · ');
+        if (meta) li.appendChild(el('span', 'meta', ' · ' + meta));
+        ul.appendChild(li);
+      });
+      ar.appendChild(ul);
+      out.appendChild(ar);
+    }
+
+    var next = el('section', 'next');
+    next.appendChild(el('h3', '', data.verdict === 'none' ? 'Looks new? Start on it.' : 'Found a gap? Start on it.'));
+    next.appendChild(el('p', '', 'Sign up and we’ll match you with one or two others to work on it together.'));
+    var cta = el('a', 'cta', 'Find a research partner');
+    cta.href = FORM;
+    next.appendChild(cta);
+    out.appendChild(next);
+
 
     var more = el('p', 'more');
     more.appendChild(document.createTextNode('This searches academic paper databases, including arXiv. Much AI safety work is posted on forums instead, so also search '));
