@@ -305,6 +305,12 @@
       <p class="res">Start with: <a href="https://arxiv.org/abs/2307.13702">Measuring Faithfulness in Chain-of-Thought Reasoning</a>, <a href="https://arxiv.org/abs/2305.04388">Language Models Don’t Always Say What They Think</a>.</p>
     </li>
     <li>
+      <div class="area">Chain of thought</div>
+      <h2>Does Mind &amp; Face fail to repair obfuscated reasoning because training both models together reintroduces hidden encoding?</h2>
+      <p>Mind &amp; Face splits a model in two: the “mind” writes the chain of thought and the “face” writes the answer, so that pressure on the answer shouldn’t teach the reasoning to hide things. Early results suggest it doesn’t fully stop this spillover. One explanation is that training both models together lets the pressure leak back, so the mind learns to encode information a monitor can’t read. Testing this on a model already trained to obfuscate, and comparing joint training with training the two separately, would show whether this repair method has a built-in floor.</p>
+      <p class="res">Start with: <a href="https://arxiv.org/abs/2511.11584">Output Supervision Can Obfuscate the Chain of Thought (Drori et al., 2025)</a>, <a href="https://www.lesswrong.com/posts/Tzdwetw55JNqFTkzK">Why Don’t We Just… Shoggoth+Face+Paraphraser? (Kokotajlo)</a>.</p>
+    </li>
+    <li>
       <div class="area">Governance</div>
       <h2>What do frontier AI companies’ safety frameworks commit to, and where do they differ?</h2>
       <p>Several leading AI companies have published frameworks describing when they would pause or add safeguards. A clear side-by-side comparison helps policymakers and researchers see where commitments are strong and where they are vague.</p>
