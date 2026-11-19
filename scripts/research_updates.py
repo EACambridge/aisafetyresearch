@@ -9,7 +9,11 @@
 
 Needs the GEMINI_API_KEY environment variable. Optional settings:
 GEMINI_MODEL (otherwise the newest stable "flash" model is chosen),
-DAYS (how far back to look, default 8), MAX_PER_QUESTION (default 4).
+DAYS (how far back to look, default 8), MAX_PER_QUESTION (default 4),
+BATCH_SIZE (items sent to Gemini per request, default 40).
+
+Items go to Gemini in batches, so one slow or overloaded request only loses
+that batch rather than the whole week.
 Uses only the Python standard library.
 """
 
@@ -36,6 +40,8 @@ REVIEW_FILE = "pr-body.md"
 WEEKS_KEPT = 12
 DAYS = int(os.environ.get("DAYS", "8"))
 MAX_PER_QUESTION = int(os.environ.get("MAX_PER_QUESTION", "4"))
+BATCH_SIZE = int(os.environ.get("BATCH_SIZE", "40"))
+TIME_BUDGET = 20 * 60  # stop starting new Gemini batches after 20 minutes
 API = "https://generativelanguage.googleapis.com/v1beta"
 UA = "aisafetyresearch.co.uk research updates (contact via site)"
 
@@ -168,27 +174,43 @@ def collect(seen):
 
 # ---------- Gemini ----------
 
-def gemini(path, body=None):
+class GeminiError(Exception):
+    pass
+
+
+def gemini(path, body=None, attempts=3):
     key = os.environ["GEMINI_API_KEY"]
     headers = {"x-goog-api-key": key, "Content-Type": "application/json"}
     data = json.dumps(body).encode() if body is not None else None
-    for attempt in range(5):
+    for attempt in range(attempts):
+        last = attempt == attempts - 1
         try:
-            return json.loads(get(API + path, headers=headers, data=data, timeout=180))
+            return json.loads(get(API + path, headers=headers, data=data, timeout=120))
         except urllib.error.HTTPError as e:
             detail = e.read().decode(errors="replace")[:300]
-            if e.code in (429, 500, 502, 503, 504) and attempt < 4:
+            if e.code in (429, 500, 502, 503, 504) and not last:
                 wait = 20 * (attempt + 1)
                 log("Gemini returned %s, retrying in %ss" % (e.code, wait))
                 time.sleep(wait)
                 continue
-            raise SystemExit("Gemini request failed (%s): %s" % (e.code, detail))
+            raise GeminiError("Gemini request failed (%s): %s" % (e.code, detail))
+        except (TimeoutError, urllib.error.URLError, ConnectionError) as e:
+            if not last:
+                log("Gemini didn't answer in time (%s), retrying in 20s" % e)
+                time.sleep(20)
+                continue
+            raise GeminiError("Gemini didn't answer in time: %s" % e)
 
 
-def pick_model():
-    if os.environ.get("GEMINI_MODEL"):
-        return os.environ["GEMINI_MODEL"]
-    models = gemini("/models?pageSize=200").get("models", [])
+def pick_models():
+    """The models to try, best first: GEMINI_MODEL if set, then the newest stable flash models."""
+    chosen = [os.environ["GEMINI_MODEL"]] if os.environ.get("GEMINI_MODEL") else []
+    try:
+        models = gemini("/models?pageSize=200").get("models", [])
+    except GeminiError as e:
+        if chosen:
+            return chosen
+        raise SystemExit("Could not list Gemini models: %s" % e)
     usable = []
     for m in models:
         name = m.get("name", "").split("/")[-1]
@@ -198,10 +220,11 @@ def pick_model():
             continue
         nums = [int(n) for n in re.findall(r"\d+", name.split("flash")[0])] or [0]
         usable.append(("preview" not in name, nums, name))
-    if not usable:
-        raise SystemExit("No suitable Gemini model found; set GEMINI_MODEL.")
     usable.sort(reverse=True)
-    return usable[0][2]
+    names = chosen + [u[2] for u in usable if u[2] not in chosen]
+    if not names:
+        raise SystemExit("No suitable Gemini model found; set GEMINI_MODEL.")
+    return names[:2]
 
 
 PROMPT = """You help students find recent AI safety research related to specific research questions.
@@ -239,7 +262,36 @@ def summarise(model, questions, items):
         text = re.sub(r"^" + fence + r"(?:json)?|" + fence + r"$", "", text.strip()).strip()
         return json.loads(text).get("matches", [])
     except (KeyError, IndexError, ValueError) as e:
-        raise SystemExit("Could not read Gemini's answer: %s" % e)
+        raise GeminiError("Could not read Gemini's answer: %s" % e)
+
+
+def summarise_in_batches(models, questions, items):
+    """Sends items in batches, trying the next model if one fails. Returns (matches, used model, failed batch notes)."""
+    matches, failed, used, start = [], [], None, time.time()
+    for b in range(0, len(items), BATCH_SIZE):
+        batch = items[b:b + BATCH_SIZE]
+        label = "items %d to %d" % (b + 1, b + len(batch))
+        if time.time() - start > TIME_BUDGET:
+            failed.append("%s skipped (out of time)" % label)
+            continue
+        for model in models:
+            try:
+                found = summarise(model, questions, batch)
+            except GeminiError as e:
+                log("Batch %s failed on %s: %s" % (label, model, e))
+                continue
+            for m in found if isinstance(found, list) else []:
+                if isinstance(m, dict):
+                    try:
+                        m["item"] = int(m.get("item")) + b
+                    except (TypeError, ValueError):
+                        m["item"] = -1
+                    matches.append(m)
+            used = used or model
+            break
+        else:
+            failed.append("%s failed" % label)
+    return matches, used, failed
 
 
 def validate(matches, items, qids):
@@ -286,11 +338,17 @@ def main():
         log("WARNING " + p)
 
     today = dt.date.today().isoformat()
-    model, kept, dropped = None, [], 0
+    model, kept, dropped, failed = None, [], 0, []
+    items = items[:250]
     if items:
-        model = pick_model()
-        log("Using model %s" % model)
-        kept, dropped = validate(summarise(model, questions, items[:250]), items, qids)
+        models = pick_models()
+        log("Using model %s (fallback: %s)" % (models[0], models[1] if len(models) > 1 else "none"))
+        matches, model, failed = summarise_in_batches(models, questions, items)
+        for f in failed:
+            log("WARNING Gemini batch " + f)
+        if failed and len(failed) * BATCH_SIZE >= len(items):
+            raise SystemExit("Every Gemini batch failed, so there is nothing to review this week.")
+        kept, dropped = validate(matches, items, qids)
     log("Kept %d items, dropped %d malformed." % (len(kept), dropped))
 
     if kept:
@@ -309,6 +367,8 @@ def main():
              "To drop an item, edit data/research-updates.json in this pull request and delete it.", ""]
     if problems:
         lines += ["Sources that failed this week: " + "; ".join(problems), ""]
+    if failed:
+        lines += ["Some items weren't checked because Gemini failed: " + "; ".join(failed) + ". Those items won't be retried next week.", ""]
     for q in sorted(qids, key=lambda s: int(s[1:])):
         its = [i for i in kept if q in i["questions"]]
         if its:
