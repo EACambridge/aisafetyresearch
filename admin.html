@@ -52,7 +52,7 @@
     people = r.data || [];
     var vis = { full: "full name shown", first: "first name shown", anonymous: "anonymous" };
     document.getElementById("people").innerHTML = people.map(function (p) {
-      return "<li><strong>" + esc(label(p)) + "</strong>" + '<div class="meta">' + esc(p.university || "No university given") + ", " + vis[p.name_visibility] + ", check-in emails " + (p.reminders_opt_in ? "on" : "off") + ", joined " + new Date(p.created_at).toLocaleDateString("en-GB") + "</div></li>";
+      return "<li><strong>" + esc(label(p)) + "</strong>" + '<div class="meta">' + esc(p.university || "No university given") + ", " + vis[p.name_visibility] + ", " + (p.signup_completed_at ? "signed up for matching" + (p.question ? " (" + esc(p.question.length > 70 ? p.question.slice(0, 67) + "…" : p.question) + ")" : "") : "hasn’t finished signing up") + ", joined " + new Date(p.created_at).toLocaleDateString("en-GB") + "</div></li>";
     }).join("") || "<li>No one has signed in yet.</li>";
   }
 
