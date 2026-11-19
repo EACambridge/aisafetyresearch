@@ -274,7 +274,7 @@
   <p class="lede">Questions a small team can make real progress on in a term. Pick one when you sign up, or bring your own.</p>
 </header>
 <main class="wrap">
-  <p class="live-note" id="live-note">Each question has a number. When someone picks a question on the sign-up form, its interest count goes up, and once two groups are working on a question it moves to the “Being researched” section below. Recent papers and posts on each question come from our weekly <a href="research.html">research updates</a>.</p>
+  <p class="live-note" id="live-note">Each question has a number. When someone picks a question as they sign up, its interest count goes up within the hour, and once two groups are working on a question it moves to the “Being researched” section below. Recent papers and posts on each question come from our weekly <a href="research.html">research updates</a>.</p>
   <p class="caveat"><strong>Use your own judgement.</strong> We collected these questions from research agendas and other sources online. Because we list a lot of them, they vary in quality, and some may be out of date or already answered. Aim for the projects that could matter most: check recent work first, and ask someone more experienced if you’re unsure a question is worth your time.</p>
   <ol class="qlist" id="open-list">
     <li>
@@ -339,7 +339,7 @@
     <p class="intro">Two or more groups are already working on these. Pick another question, or mention one of these when you sign up if you’d like to join an existing group.</p>
     <ol class="qlist" id="researched-list"></ol>
   </section>
-  <a class="cta" href="https://docs.google.com/forms/d/e/1FAIpQLSdmHTtx13CAIPE9tAMnrkUetPg1fFktIbesKEXKRQu8jyrQ9A/viewform">Sign up to join a project now</a>
+  <a class="cta" href="login.html">Sign up to join a project now</a>
   <div style="height:4rem"></div>
 </main>
 <footer class="wrap">
@@ -348,8 +348,7 @@
 <script>
 (function () {
   var CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6_xOYEMg6qJRN7T0YQmxfVTwmA0s_-nVtD2c-uUv3pwshbpK7qbWv1ctTJPyZ3a-x8OeogAh5tSyj/pub?gid=0&single=true&output=csv";
-  var FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdmHTtx13CAIPE9tAMnrkUetPg1fFktIbesKEXKRQu8jyrQ9A/viewform";
-  var QUESTION_ENTRY = "entry.824615939";
+  var SIGNUP_URL = "login.html";
 
   function parseCSV(text) {
     var rows = [], row = [], field = "", inQuotes = false;
@@ -404,7 +403,7 @@
     if (groups >= 2) meta += '<span class="working">' + groups + " groups working on this</span>";
     var pick = "";
     if (!researched && q.option) {
-      pick = '<a class="pick" href="' + esc(FORM_URL + "?usp=pp_url&" + QUESTION_ENTRY + "=" + encodeURIComponent(q.option)) + '">Pick this question</a>';
+      pick = '<a class="pick" href="' + esc(SIGNUP_URL + "?q=" + encodeURIComponent(q.option)) + '">Pick this question</a>';
     }
     return '<li id="' + esc(String(q.id).toLowerCase()) + '">' +
       '<div class="area">' + esc(q.area) + "</div>" +
