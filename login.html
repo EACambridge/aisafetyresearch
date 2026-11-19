@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sign in | AI Safety Research</title>
+<title>Sign up or sign in | AI Safety Research</title>
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,16 +16,17 @@
 <body>
 <header class="wrap page-head">
   <a class="secondary" href="index.html">Back to home</a>
-  <h1>Sign in</h1>
-  <p class="lede">Sign in to see your team, post check-ins and submit your research. We’ll email you a sign-in link, so there’s no password to remember.</p>
+  <h1>Sign up or sign in</h1>
+  <p class="lede">Enter your email and we’ll send you a link, so there’s no password to remember. If you’re new, you’ll then answer a few questions so we can match you with a research team.</p>
+  <p class="hint" id="picked" hidden></p>
 </header>
 <main class="wrap" id="app">
   <section class="card">
     <form id="login-form">
       <label for="email">Email address</label>
       <input type="email" id="email" autocomplete="email" required>
-      <p class="hint">Use the same email you signed up with, if you have. By signing in you agree to how we use your details in our <a href="privacy.html">privacy notice</a>.</p>
-      <button type="submit">Email me a sign-in link</button>
+      <p class="hint">Use an email you check often: it’s how your team and we will reach you. Read <a href="privacy.html">how we use your details</a>.</p>
+      <button type="submit">Email me a link</button>
     </form>
     <div id="status" aria-live="polite"></div>
   </section>
@@ -34,6 +35,13 @@
 (async function () {
   var card = document.querySelector("#app .card");
   if (!asr.configured) { asr.notConfigured(card); return; }
+  var q = new URLSearchParams(location.search).get("q");
+  if (q) {
+    try { localStorage.setItem("asr_question", q); } catch (e) {}
+    var pk = document.getElementById("picked");
+    pk.textContent = "You picked: " + q + ". We’ll remember it when you finish signing up.";
+    pk.hidden = false;
+  }
   if (await asr.session()) { location.href = "account.html"; return; }
   document.getElementById("login-form").addEventListener("submit", async function (e) {
     e.preventDefault();
@@ -43,7 +51,7 @@
     var r = await asr.client.auth.signInWithOtp({ email: email, options: { emailRedirectTo: location.origin + "/account.html" } });
     status.innerHTML = r.error
       ? '<p class="msg">Something went wrong: ' + asr.esc(r.error.message) + "</p>"
-      : '<p class="msg">Check your inbox for a sign-in link. It may take a minute to arrive.</p>';
+      : '<p class="msg">Check your inbox for a link from AI Safety Research. It may take a minute to arrive, and it’s worth checking your spam folder. Open the link on this device if you can.</p>';
   });
 })();
 </script>
