@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to run your project | AI Safety Research</title>
+<meta name="description" content="Five steps to run an AI safety research project as a student, from researching your methods to finding funding and sharing what you found.">
+<link rel="canonical" href="https://aisafetyresearch.co.uk/guide.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AI Safety Research">
+<meta property="og:title" content="How to run your project | AI Safety Research">
+<meta property="og:description" content="Five steps to run an AI safety research project as a student, from researching your methods to finding funding and sharing what you found.">
+<meta property="og:url" content="https://aisafetyresearch.co.uk/guide.html">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #000000;
+    --ink-soft: #4d4d4d;
+    --rule: #d4d4d4;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #000000;
+      --ink: #ffffff;
+      --ink-soft: #b3b3b3;
+      --rule: #333333;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--paper); }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    font-variation-settings: "wdth" 100;
+    font-size: 1.125rem;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+  a { color: inherit; }
+  a:focus-visible, .cta:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+  .wrap { width: min(1120px, 100% - 3rem); margin-inline: auto; }
+  h1 {
+    font-variation-settings: "wdth" 68;
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: -0.02em;
+  }
+  .lede { margin-top: 2rem; font-size: clamp(1.25rem, 2.2vw, 1.6rem); line-height: 1.4; max-width: 30ch; }
+  .cta {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--paper);
+    text-decoration: none;
+    font-weight: 800;
+    font-variation-settings: "wdth" 85;
+    font-size: clamp(1.3rem, 2.4vw, 1.75rem);
+    padding: 1.1rem 2rem;
+    border-radius: 2px;
+    transition: transform 0.15s ease;
+  }
+  .cta:hover { transform: translateY(-2px); }
+  .secondary { font-weight: 700; font-size: 1.2rem; text-underline-offset: 0.25em; text-decoration-thickness: 2px; padding: 0.2rem 0.3rem; }
+  footer a + a, footer a:last-child { margin-left: 0.75rem; }
+  footer { border-top: 1px solid var(--rule); padding-block: 2rem 3rem; margin-top: 4rem; font-size: 0.85rem; color: var(--ink-soft); }
+  .page-head { padding-block: 4rem 2.5rem; }
+  .page-head h1 { margin-top: 2.5rem; max-width: 12ch; font-size: clamp(3rem, 8vw, 6.5rem); }
+  .qlist { list-style: none; border-top: 1px solid var(--rule); }
+  .qlist > li { padding-block: 2.25rem; border-bottom: 1px solid var(--rule); }
+  .area { color: var(--ink-soft); font-weight: 700; font-size: 1rem; }
+  .qlist h2 { font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 1.9rem); line-height: 1.2; max-width: 34ch; margin-top: 0.25rem; }
+  .qlist p { max-width: 62ch; margin-top: 0.75rem; }
+  .qlist .res { color: var(--ink-soft); font-size: 1rem; }
+  .status { color: var(--ink-soft); font-size: 1rem; margin-top: 0.5rem; }
+  .qlist dl { max-width: 62ch; margin-top: 1rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.6rem; }
+  .qlist dt { font-weight: 700; }
+  .qlist dd { margin: 0 0 0.4rem; }
+  @media (min-width: 720px) { .qlist dl { grid-template-columns: 9rem minmax(0, 1fr); gap: 0.6rem 1.5rem; } .qlist dd { margin: 0; } }
+  .note { margin-block: 3rem; color: var(--ink-soft); max-width: 62ch; }
+  .submit { margin-top: 1.5rem; padding-top: 3rem; border-top: 1px solid var(--rule); }
+  .submit h2 { font-weight: 800; font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1.15; }
+  .submit p { max-width: 62ch; margin: 0.75rem 0 1.75rem; }
+  .guide { margin-top: 0; }
+  .guide > h2 { font-variation-settings: "wdth" 75; font-weight: 800; font-size: clamp(2rem, 4.5vw, 3.25rem); line-height: 1; }
+  .guide > p { max-width: 62ch; margin-top: 1rem; }
+  .gsteps { list-style: none; counter-reset: g; margin-top: 2.5rem; }
+  .gsteps > li { counter-increment: g; display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); gap: 0 1rem; padding-block: 1.75rem; border-top: 2px solid var(--ink); }
+  .gsteps > li::before { content: counter(g); font-weight: 900; font-variation-settings: "wdth" 68; font-size: 2.5rem; line-height: 1; }
+  .gsteps h3 { font-weight: 800; font-size: clamp(1.3rem, 2.4vw, 1.65rem); line-height: 1.2; }
+  .gsteps p, .gsteps ul { max-width: 62ch; margin-top: 0.6rem; }
+  .gsteps ul { padding-left: 1.2rem; }
+  .gsteps ul li + li { margin-top: 0.35rem; }
+  .gsteps .first { font-weight: 700; }
+  .gsteps .small { color: var(--ink-soft); font-size: 1rem; }
+  .jump { margin-top: 1.5rem; }
+  @media (prefers-reduced-motion: reduce) { .cta { transition: none; } .cta:hover { transform: none; } }
+</style>
+</head>
+<body>
+<header class="wrap page-head">
+  <a class="secondary" href="index.html">Back to home</a>
+  <h1>How to run your project</h1>
+  <p class="lede">Five steps that make the difference between a project that fizzles out and one that finishes.</p>
+</header>
+<main class="wrap">
+  <section class="guide" id="guide" aria-label="Steps">
+    <ol class="gsteps">
+      <li><div>
+        <h3>Research how to do your research</h3>
+        <p class="first">We recommend you make this your first step, and spend a week or two on it before running anything.</p>
+        <p>Find out how people already tackle questions like yours. It shows you where your project can add something new, gives you a plan you can defend, and is exactly what funders look for when you apply. It is also what makes the research useful rather than a repeat of something already done.</p>
+        <ul>
+          <li>Read the closest existing work. <a href="check.html">Check your idea</a> finds the papers nearest to yours.</li>
+          <li>Learn the methods those papers use. <a href="https://www.arena.education/">ARENA</a> teaches the technical tools, and <a href="https://bluedot.org/">BlueDot Impact</a> runs free courses on AI safety and governance.</li>
+          <li>New to the field? Start with our <a href="index.html#learn">learning resources</a>.</li>
+          <li>Talk to someone who has done similar work. A short message to a paper’s author, or a post on the <a href="https://www.alignmentforum.org/">Alignment Forum</a>, often saves weeks.</li>
+        </ul>
+      </div></li>
+      <li><div>
+        <h3>Write a one-page plan</h3>
+        <p>Your question, why it matters, how you’ll answer it, what you’ll have by the end of term, and what you need: money, compute or a mentor. Agree it as a team. You’ll reuse it for every funding application.</p>
+      </div></li>
+      <li id="funding"><div>
+        <h3>Find funding</h3>
+        <p>Small, specific requests, such as compute for one experiment, are usually the quickest to get. Send your one-page plan with a clear budget.</p>
+        <ul>
+          <li><a href="https://bluedot.org/grants/rapid">BlueDot Impact Rapid Grants</a>: small, fast grants for projects like yours.</li>
+          <li><a href="https://manifund.org/">Manifund</a>: post your project publicly and funders can back it.</li>
+          <li><a href="https://funds.effectivealtruism.org/funds/transformative-ai">Transformative AI Fund</a> (EA Funds): grants to individuals and new projects, applications open all year.</li>
+          <li><a href="https://aisafety.com/funding">AISafety.com funding directory</a> and Manifund’s <a href="https://manifund.org/ais-funder-bulletin">AI safety funder bulletin</a>: up-to-date lists of who funds what.</li>
+        </ul>
+        <p class="small">Funders change often. Check each one is still open before you apply.</p>
+      </div></li>
+      <li><div>
+        <h3>Meet every week</h3>
+        <p>Pick a fixed time, keep short notes of what you tried and what’s next, and answer our one-minute check-in. If you’re stuck or the team isn’t working, say so in the check-in and we’ll help.</p>
+      </div></li>
+      <li><div>
+        <h3>Share what you found</h3>
+        <p>Write it up, even if the result wasn’t what you hoped; a clear negative result saves others time. Share it from your account and we’ll list it on <a href="completed.html">Completed projects</a>, where people can read it and comment.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <div style="height:2rem"></div>
+  <a class="cta" href="login.html">Sign up to join a project</a>
+  <div style="height:4rem"></div>
+</main>
+<footer class="wrap">
+  Built by Zebedi Casajuana with support from <a href="https://www.eacambridge.org/">EA Cambridge</a>. <a href="completed.html">Completed projects</a> <a href="login.html">Sign in</a> <a href="privacy.html">Privacy</a>
+</footer>
+</body>
+</html>

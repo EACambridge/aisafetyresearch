@@ -1,4 +1,4 @@
-// Shared code for comments on completed projects and forum threads.
+// Shared code for comments on completed projects. Comments go live straight away; admins can hide them.
 // Needs supabase-js, supabase-config.js and auth.js loaded first.
 (function () {
   var esc = function (s) { return window.asr.esc(s); };
@@ -63,7 +63,7 @@
           (user && user.admin ? '<button class="link" data-hide-comment="' + c.id + '">Hide this comment</button>' : "") + "</li>";
       }).concat(mine.map(function (c) {
         return '<li class="pending"><div class="who">You <span class="meta">' + when(c.created_at) + ", " +
-          (c.status === "pending" ? "waiting for approval" : "not shown") + "</span></div>" + prose(c.body) +
+          (c.status === "pending" ? "waiting for approval" : "hidden by an organiser") + "</span></div>" + prose(c.body) +
           '<button class="link" data-del-comment="' + c.id + '">Delete</button></li>';
       }));
       box.querySelector(".comment-list").innerHTML = items.length ? items.join("") : '<li class="none">' + words.none + "</li>";
@@ -75,7 +75,7 @@
         ? '<form class="comment-form"><label for="comment-body">' + words.add + '</label>' +
           '<textarea id="comment-body" maxlength="3000" required placeholder="Questions, suggestions, related work, encouragement…"></textarea>' +
           '<p class="hint">You’ll appear as <strong>' + esc(user.name) + '</strong> (change this on <a href="account.html">your account</a>). ' +
-          "An organiser reads every comment before it appears, usually within a day or two.</p>" +
+          "Your comment appears straight away. Please be kind and specific.</p>" +
           '<button type="submit">' + words.button + '</button><div class="form-status" aria-live="polite"></div></form>'
         : '<p class="signin">' + signInLink("Sign in to " + (words.one === "reply" ? "reply" : "comment")) + "</p>");
 
@@ -95,13 +95,15 @@
       e.preventDefault();
       var body = form.querySelector("textarea").value.trim(), st = form.querySelector(".form-status");
       if (!body) return;
-      var row = { user_id: user.id, body: body, status: "pending" };
+      var row = { user_id: user.id, body: body, status: "approved" };
       row[key] = id;
       var r = await asr.client.from("comments").insert(row);
+      // Until supabase/comments-live.sql has been run, the database only accepts comments held for approval.
+      if (r.error) { row.status = "pending"; r = await asr.client.from("comments").insert(row); }
       if (r.error) { st.innerHTML = '<p class="msg">Couldn’t post your comment: ' + esc(r.error.message) + "</p>"; return; }
       asr.log("commented", { on: key, id: id });
       form.reset();
-      st.innerHTML = '<p class="msg">Thanks. Your ' + words.one + ' will appear once an organiser has read it.</p>';
+      st.innerHTML = '<p class="msg">' + (row.status === "approved" ? "Thanks, your " + words.one + " is up." : "Thanks. Your " + words.one + " will appear once an organiser has read it.") + "</p>";
       load();
     });
 

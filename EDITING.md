@@ -20,7 +20,7 @@ So the machinery exists to: collect sign-ups, suggest teams, introduce them fast
 
 ## Before you change anything
 
-1. **Everything runs from one Google account: ea.cambr@gmail.com.** It owns the spreadsheets, forms and scripts, and it's the only admin on the website. Sign in as it before editing anything below.
+1. **Everything runs from one Google account: ea.cambr@gmail.com.** It owns the spreadsheets, forms and scripts, and it's an admin on the website (so is zwc22@cam.ac.uk). Sign in as it before editing anything below.
 2. **Never paste a secret key into a chat, a document or the code.** Keys live only in the places listed under **Keys and where they live**. The Claude account is shared by the whole committee, so treat chats there as public.
 3. **The website code is public** (it's a public GitHub repository). Spreadsheet and form IDs appearing in it is fine; keys are not.
 4. **Test after every change.** Each edit below ends with a check.
@@ -34,12 +34,12 @@ So the machinery exists to: collect sign-ups, suggest teams, introduce them fast
 | Website pages | Everything people see at aisafetyresearch.co.uk | GitHub repository [EACambridge/aisafetyresearch](https://github.com/EACambridge/aisafetyresearch), signed in as EACambridge. Changes go live about a minute after you commit. |
 | Hosting | Serves the pages | GitHub Pages (repository Settings > Pages). Free. |
 | Domain name | aisafetyresearch.co.uk | names.co.uk (DNS records). Don't touch the four GitHub A records, the www record or the `mail` records, or the site or sign-in emails will stop working. |
-| Accounts | Sign-in, sign-up answers, teams, completed projects, forum threads and comments | Supabase project "EACambridge's Project" (`vidkjapmgeuomrqduycm`), hosted in Frankfurt: [dashboard](https://supabase.com/dashboard/project/vidkjapmgeuomrqduycm). Free plan. |
+| Accounts | Sign-in, sign-up answers, teams, completed projects and comments | Supabase project "EACambridge's Project" (`vidkjapmgeuomrqduycm`), hosted in Frankfurt: [dashboard](https://supabase.com/dashboard/project/vidkjapmgeuomrqduycm). Free plan. |
 | Sign-in emails | Sends the "Email me a code" emails | Resend (resend.com, signed in as ea.cambr), from team@mail.aisafetyresearch.co.uk. Supabase sends through it (Supabase > Authentication > Emails > SMTP Settings). |
 | Matching spreadsheet | People, proposed teams, teams, check-ins, "Needs attention" | [AI Safety Research sign-ups](https://docs.google.com/spreadsheets/d/1tOuBfJgnmWL2-pd7lLVjQfm24I6I5WYrK6dZrPT4x9Q/edit). Its **Matching** menu runs everything. |
 | Matching code | Syncs sign-ups, suggests teams, writes intro emails, sends check-ins | Apps Script project ["AI Safety Research matching"](https://script.google.com/home/projects/1uBP-KoEEgbZDIFwIoK7xF7rD56N-kvpzrwUVD9-5iYS3_k5Ym9qz-Y-Y/edit) (Extensions > Apps Script from the spreadsheet). |
 | Questions database | The research questions, interest counts and teams shown on the site | [AI Safety Research: questions database](https://docs.google.com/spreadsheets/d/1uB6p3rnhhEJuFfcrdDS-MK-BhIAEdJHkNzcEsbmxNt0/edit). Published to the web as CSV; the site reads that. |
-| Completed projects and forum | Projects people share from their account, forum threads, and comments; all held for approval | Stored with accounts in Supabase (tables `posts`, `threads`, `comments`; set up by `supabase/forum.sql`). Reviewed on [admin.html](https://aisafetyresearch.co.uk/admin.html). The old Google research submission form was closed on 20 Nov 2026. |
+| Completed projects and comments | Projects people share from their account (held for review), and comments on them (live straight away) | Stored with accounts in Supabase (tables `posts` and `comments`; set up by `supabase/forum.sql`, then `supabase/comments-live.sql`). The old forum's `threads` table is still there but nothing writes to it. Reviewed on [admin.html](https://aisafetyresearch.co.uk/admin.html). The old Google research submission form was closed on 20 Nov 2026. |
 | Weekly check-in form | The one-minute check-in emailed to matched people | [Form](https://docs.google.com/forms/d/1fWmtHbeLiXEDPYcVnx0fdM1X1ZMjvSfAG91lKR3VCxU/edit). Answers land in the "Check-ins" tab of the matching spreadsheet. |
 | Idea checker | The "Check your idea" page | Apps Script project ["AI Safety Research idea checker"](https://script.google.com/home/projects/14q2ur1BxnEl8yZD0dx82jFOfCBtW8RUw6M66PW9ByboVacC6EI3mZDqC/edit), run as a web app. Uses Google Gemini plus arXiv and OpenAlex or Crossref. |
 | Weekly research updates | Finds new papers for each question every Monday | GitHub Actions workflow `.github/workflows/research-updates.yml` running `scripts/research_updates.py`. It opens a pull request for someone to review; the research page only changes when that is merged. |
@@ -50,18 +50,17 @@ So the machinery exists to: collect sign-ups, suggest teams, introduce them fast
 
 | File | Page |
 |---|---|
-| `index.html` | Home page |
+| `index.html` | Home page, kept deliberately short: sign up, check your idea, find a question, our mission, learning resources |
 | `questions.html` | Research questions (reads the questions database) |
 | `projects.html` | Current projects (typed directly into the page) |
-| `research.html` | Weekly research updates (reads `data/research-updates.json`) |
+| `guide.html` | The five-step guide to running a project, including where to find funding |
+| `research.html` | Weekly research updates (reads `data/research-updates.json`). Not in the menu: the job runs in the background. |
 | `completed.html` | Completed projects: the list, and each project's own page with comments (`completed.html?p=` number) |
-| `forum.html` | The forum: thread list, starting a thread, and each thread's page with replies (`forum.html?t=` number) |
-| `forum.js`, `community.css` | Shared comment code and styling for those two pages |
-| `published.html` | Old address; sends visitors on to `completed.html` |
+| `forum.js`, `community.css` | Comment code and styling for the completed projects page |
 | `check.html` | Check your idea (calls the idea checker) |
 | `login.html` | Sign up or sign in |
 | `account.html` | The sign-up form, your team, sharing a completed project |
-| `admin.html` | Organiser page: approve projects and forum posts, unlist projects, manage teams, see people. Only works for admins. |
+| `admin.html` | Organiser page: review shared projects, hide comments, unlist projects, manage teams, see people. Only works for admins. |
 | `privacy.html` | Privacy notice |
 | `404.html` | Page not found |
 | `app.css`, `auth.js`, `supabase-config.js` | Shared styling and sign-in code for the account pages |
@@ -74,12 +73,11 @@ So the machinery exists to: collect sign-ups, suggest teams, introduce them fast
 1. They click **Sign up to join a project** (or **Pick this question** on the questions page) and land on `login.html`. If they picked a question, the page remembers it.
 2. They enter their email. Supabase sends an email through Resend with an 8-digit code (subject "Your code: ..."), and they type the code on the same page. The email also has a link back to `login.html` with a **Continue** button, for anyone who prefers to click.
 3. They land on `account.html`. The first time, they fill in the sign-up questions and tick the privacy box, then click **Join matching**. Answers are saved to their profile in Supabase.
-4. **Every hour**, the matching script copies new sign-ups into the **People** tab as "Waiting", and updates the answers of anyone still waiting. It also emails ea.cambr about anything new waiting for review, and emails people when their project or thread goes live or gets an approved comment.
+4. **Every hour**, the matching script copies new sign-ups into the **People** tab as "Waiting", and updates the answers of anyone still waiting. It also emails ea.cambr about any shared project waiting for review, and emails people when their project goes live or gets a comment.
 5. An organiser runs the weekly routine (below): **Suggest teams**, approves the sensible ones, and runs **Create intro emails**. This drafts one email per team in ea.cambr's Gmail, marks the people "Matched", lists the team on the questions page, and adds the team to its members' account pages.
 6. Once weekly check-ins are on, matched people get a check-in every Monday. Their answers update People automatically. Asking to be rematched puts them back in the pool; choosing to leave removes them.
 7. No reply for 14 days adds a nudge to the next email. After 21 days they're marked "Inactive" and left out of matching. People still waiting get one "still interested?" email at 14 days.
 8. When a team finishes, someone shares the project from their account page. An organiser lists it and it appears on `completed.html`, where signed-in people can comment.
-9. At any point, people can ask for feedback, find teammates or discuss questions on `forum.html`. Every thread, reply and comment is held until an organiser approves it.
 
 People statuses in the People tab: **Waiting, Proposed, Matched, Rematch requested, Inactive, Left.**
 
@@ -127,18 +125,17 @@ Matching menu > **Turn on weekly check-ins (Mondays)**. They're **off** at the m
 ### 5. Review shared projects
 
 1. The hourly sync emails ea.cambr when something is waiting ("... waiting for review on AI Safety Research").
-2. Sign in on the site as ea.cambr@gmail.com and open [admin.html](https://aisafetyresearch.co.uk/admin.html).
+2. Sign in on the site as an admin (ea.cambr@gmail.com or zwc22@cam.ac.uk) and open [admin.html](https://aisafetyresearch.co.uk/admin.html).
 3. Under **Projects waiting for review**, read the summary and open the link. Click **List it** if it's real AI safety work, described honestly, with a link that opens. Otherwise click **Don't list** and email the author to say why.
 4. Listed projects appear on Completed projects straight away. The author is emailed automatically within the hour.
 5. To take a project down later, use **Remove from the site** under **Listed projects**. Its comments stop showing too.
 
-### 6. Approve forum threads, replies and comments
+### 6. Keep an eye on comments
 
-1. Same email, same page: look under **Forum posts waiting for approval**.
-2. **Approve** anything on-topic and civil. **Hide** spam, personal attacks, and anything sharing someone else's private details. Hidden posts stay visible to their author, marked "not shown".
-3. When a comment on a project or a reply in a thread is approved, the project's or thread's author is emailed within the hour. People are never emailed about their own comments.
-4. While signed in as an admin, you'll also see **Hide** links under every approved thread and comment on the public pages, for anything that slips through.
-5. Aim to check at least every couple of days. A forum where posts sit unapproved for a week feels dead, and that is the main way it could fail.
+1. Comments on completed projects go live as soon as they're posted. Only signed-in people can comment, and only on listed projects.
+2. The project's author is emailed about each new comment within the hour. People are never emailed about their own comments.
+3. On [admin.html](https://aisafetyresearch.co.uk/admin.html), **Recent comments** lists the latest 30. Click **Hide** on spam, personal attacks or anything sharing someone else's private details; **Show again** undoes it. Hidden comments stay visible to their author, marked as hidden.
+4. While signed in as an admin you'll also see a **Hide** link under every comment on the project pages themselves.
 
 ### 7. Manage teams by hand
 
@@ -181,7 +178,7 @@ Work through every place their details can be:
 1. **Account:** Supabase dashboard > Authentication > Users > find them > Delete user. This removes their profile, posts and activity. (They can also do it themselves from their account page.)
 2. **Matching spreadsheet:** delete their rows in People, Check-ins and, if they used the old form, "Form Responses 1". Remove their name and email from any rows in Proposed teams and Teams.
 3. **Questions database:** remove their name from **Members shown on site** (column O).
-4. **Projects, forum threads and comments** are deleted automatically when their account is deleted in step 1. To remove one item only, use admin.html or ask them to delete it.
+4. **Projects and comments** are deleted automatically when their account is deleted in step 1. To remove one item only, use admin.html or ask them to delete it.
 5. **Gmail:** delete intro or check-in threads if they ask.
 6. Reply to confirm it's done.
 
@@ -249,8 +246,8 @@ Supabase is retiring its older "legacy" keys in early 2027. Nothing here uses th
 ## Known gaps and open decisions
 
 1. **The first research-updates pull request (#1, from 7 November) is still waiting for review.** Until it's merged the research page is empty. The two Monday runs since then failed because Gemini was overloaded; the script has been fixed to cope.
-2. **The forum starts empty.** An empty forum puts people off posting. Before promoting it, have two or three committee members start real threads (for example, feedback wanted on a current project, or "looking for a teammate on Q3"), and approve posts quickly in the first few weeks.
+2. **Comments are not checked before they appear.** If spam becomes a problem, the old approval step can be turned back on: put the `comments insert own` rule from `supabase/forum.sql` back and change `forum.js` to post comments as "pending".
 3. **Nobody owns matching yet.** Someone needs to run the weekly routine.
 4. **The privacy notice names EA Cambridge as the data controller.** This was left to decide later.
 5. **No peer rating form or measurement yet.** The "How it works" tab in the matching spreadsheet lists what to measure: days from sign-up to intro, share of teams meeting in week one, share still active after 4 and 8 weeks, share finishing a write-up.
-6. **A committee test account exists** (ea.cambr@gmail.com, marked "Left" in People). It's harmless; leave it, since it's also the admin account.
+6. **A committee test account exists** (ea.cambr@gmail.com, marked "Left" in People). It's harmless; leave it, since it's also an admin account.
