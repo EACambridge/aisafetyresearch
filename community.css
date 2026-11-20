@@ -1,0 +1,68 @@
+/* Styles for the Completed projects and Forum pages. Matches the look of the other public pages. */
+:root { --paper: #ffffff; --ink: #000000; --ink-soft: #4d4d4d; --rule: #d4d4d4; --field: #f4f4f4; color-scheme: light; }
+@media (prefers-color-scheme: dark) {
+  :root { --paper: #000000; --ink: #ffffff; --ink-soft: #b3b3b3; --rule: #333333; --field: #141414; color-scheme: dark; }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--paper); }
+body { background: var(--paper); color: var(--ink); font-family: "Archivo", "Helvetica Neue", Arial, sans-serif; font-variation-settings: "wdth" 100; font-size: 1.125rem; line-height: 1.55; overflow-x: hidden; }
+a { color: inherit; }
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.wrap { width: min(1120px, 100% - 3rem); margin-inline: auto; }
+.narrow { max-width: 62ch; }
+h1 { font-variation-settings: "wdth" 68; font-weight: 900; line-height: 0.88; letter-spacing: -0.02em; }
+.page-head { padding-block: 4rem 2.5rem; }
+.page-head h1 { margin-top: 2.5rem; max-width: 14ch; font-size: clamp(3rem, 8vw, 6.5rem); }
+.page-head h1.long { max-width: 22ch; font-size: clamp(2.2rem, 5.5vw, 4.2rem); line-height: 0.95; }
+.lede { margin-top: 2rem; font-size: clamp(1.25rem, 2.2vw, 1.6rem); line-height: 1.4; max-width: 34ch; }
+.secondary { font-weight: 700; font-size: 1.15rem; text-underline-offset: 0.25em; text-decoration-thickness: 2px; }
+.nav { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
+.cta { display: inline-block; background: var(--ink); color: var(--paper); text-decoration: none; font-weight: 800; font-variation-settings: "wdth" 85; font-size: clamp(1.2rem, 2.2vw, 1.6rem); padding: 1rem 1.8rem; border-radius: 2px; }
+.caveat { max-width: 62ch; margin: 0 0 2rem; padding-left: 1rem; border-left: 3px solid var(--ink); color: var(--ink-soft); font-size: 1rem; }
+.meta, .byline { color: var(--ink-soft); font-size: 1rem; }
+.byline { margin-top: 0.4rem; }
+
+/* Lists of projects and threads */
+.items { list-style: none; border-top: 1px solid var(--rule); }
+.items > li { padding-block: 2rem; border-bottom: 1px solid var(--rule); }
+.items h2 { font-weight: 800; font-size: clamp(1.35rem, 2.5vw, 1.8rem); line-height: 1.2; max-width: 40ch; }
+.items h2 a { text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+.items p { max-width: 62ch; margin-top: 0.75rem; }
+.items .counts { margin-top: 0.75rem; font-weight: 700; font-size: 1rem; }
+.items .pending { color: var(--ink-soft); }
+.empty { padding-block: 2rem; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); max-width: 62ch; }
+
+/* A single project or thread */
+.article { max-width: 68ch; }
+.article .body { margin-top: 1.5rem; }
+.article .body p + p { margin-top: 0.9rem; }
+.open { display: inline-block; margin-top: 1.5rem; }
+
+/* Comments */
+.discussion { max-width: 68ch; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--rule); }
+.discussion h2 { font-weight: 800; font-size: clamp(1.4rem, 2.6vw, 1.9rem); }
+.comments { list-style: none; margin-top: 1rem; }
+.comments > li { padding-block: 1.1rem; border-top: 1px solid var(--rule); }
+.comments > li.none { color: var(--ink-soft); }
+.comments > li.pending { border-left: 3px solid var(--rule); padding-left: 1rem; }
+.comments .who { font-weight: 700; }
+.comments p { margin-top: 0.4rem; }
+.comments p + p { margin-top: 0.7rem; }
+
+/* Forms */
+form { margin-top: 1.5rem; }
+label { display: block; font-weight: 700; margin: 1rem 0 0.35rem; }
+input[type=text], textarea { width: 100%; font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--rule); border-radius: 2px; padding: 0.65rem 0.75rem; }
+textarea { min-height: 8rem; resize: vertical; }
+.hint { color: var(--ink-soft); font-size: 0.95rem; margin-top: 0.4rem; }
+button { font: inherit; font-weight: 800; cursor: pointer; background: var(--ink); color: var(--paper); border: 0; border-radius: 2px; padding: 0.8rem 1.4rem; margin-top: 1rem; }
+button.link { background: none; color: var(--ink-soft); padding: 0; margin-top: 0.4rem; font-weight: 700; font-size: 0.95rem; text-decoration: underline; }
+.msg { margin-top: 1rem; padding: 0.75rem 1rem; border-left: 4px solid var(--ink); background: var(--field); }
+.signin { margin-top: 1.25rem; }
+.share { margin-top: 4rem; padding-top: 3rem; border-top: 1px solid var(--rule); }
+.share h2 { font-weight: 800; font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1.15; }
+.share p, .share ol { max-width: 62ch; margin: 0.75rem 0 1.5rem; }
+.share ol { margin-left: 1.25rem; }
+.share li + li { margin-top: 0.4rem; }
+footer { border-top: 1px solid var(--rule); padding-block: 2rem 3rem; margin-top: 4rem; font-size: 0.85rem; color: var(--ink-soft); }
+footer a + a { margin-left: 0.75rem; }

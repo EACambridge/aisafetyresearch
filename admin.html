@@ -20,7 +20,9 @@
   <p class="lede">Review posts, manage teams and see what’s happening.</p>
 </header>
 <main class="wrap" id="app">
-  <section class="card"><h2>Write-ups waiting for review</h2><ul class="list" id="review"></ul></section>
+  <section class="card"><h2>Projects waiting for review</h2><p class="hint">List a project if it fits the site: real AI safety work, described honestly, with a link that opens. Listing puts it on Completed projects and emails the author within the hour.</p><ul class="list" id="review"></ul></section>
+  <section class="card"><h2>Forum posts waiting for approval</h2><p class="hint">Approve anything on-topic and civil. Hide spam, personal attacks and anything that shares someone else’s private details. Approved comments on a project or thread are emailed to its author within the hour.</p><ul class="list" id="forum-review"></ul></section>
+  <section class="card"><h2>Listed projects</h2><ul class="list" id="listed"></ul></section>
   <section class="card">
     <h2>Teams</h2>
     <form id="team-form" class="row" style="align-items:flex-end">
@@ -56,13 +58,43 @@
     }).join("") || "<li>No one has signed in yet.</li>";
   }
 
+  function safeLink(u) { return /^https?:\/\//i.test(u || "") ? u : ""; }
   async function loadReview() {
-    var r = await db.from("posts").select("*").eq("status", "submitted").order("created_at");
+    var r = await db.from("posts").select("*").eq("status", "submitted").eq("kind", "write-up").order("created_at");
     document.getElementById("review").innerHTML = (r.data || []).map(function (p) {
-      var who = personById(p.user_id);
-      return "<li><strong>" + esc(p.title || "Untitled write-up") + "</strong>" + '<div class="meta">By ' + esc(who ? label(who) : p.user_id) + ", " + new Date(p.created_at).toLocaleDateString("en-GB") + "</div><p>" + esc(p.body) + "</p>" + (p.link ? '<p><a href="' + esc(p.link) + '">' + esc(p.link) + "</a></p>" : "") +
-        '<div class="row"><button data-publish="' + p.id + '">Publish</button><button class="quiet" data-reject="' + p.id + '">Don’t publish</button></div></li>';
+      var who = personById(p.user_id), link = safeLink(p.link);
+      return "<li><strong>" + esc(p.title || "Untitled project") + "</strong>" + '<div class="meta">By ' + esc(who ? label(who) : p.user_id) + (p.coauthors ? ", with " + esc(p.coauthors) : "") + ", " + new Date(p.created_at).toLocaleDateString("en-GB") + "</div><p>" + esc(p.body) + "</p>" + (link ? '<p><a href="' + esc(link) + '">' + esc(link) + "</a></p>" : "<p class=\"meta\">No link given.</p>") +
+        '<div class="row"><button data-publish="' + p.id + '">List it</button><button class="quiet" data-reject="' + p.id + '">Don’t list</button></div></li>';
     }).join("") || "<li>Nothing waiting for review.</li>";
+  }
+
+  async function loadForumReview() {
+    var th = await db.from("threads").select("*").eq("status", "pending").order("created_at");
+    var cm = await db.from("comments").select("*").eq("status", "pending").order("created_at");
+    var postIds = (cm.data || []).map(function (c) { return c.post_id; }).filter(Boolean);
+    var threadIds = (cm.data || []).map(function (c) { return c.thread_id; }).filter(Boolean);
+    var posts = postIds.length ? (await db.from("posts").select("id,title").in("id", postIds)).data || [] : [];
+    var threads = threadIds.length ? (await db.from("threads").select("id,title").in("id", threadIds)).data || [] : [];
+    function titleOf(list, id) { var x = list.filter(function (y) { return y.id === id; })[0]; return x ? x.title : "#" + id; }
+    function who(uid) { var p = personById(uid); return p ? label(p) : uid; }
+    var items = (th.data || []).map(function (t) {
+      return '<li><strong>New thread: ' + esc(t.title) + '</strong><div class="meta">By ' + esc(who(t.user_id)) + ", " + new Date(t.created_at).toLocaleString("en-GB") + "</div><p>" + esc(t.body) + "</p>" +
+        '<div class="row"><button data-approve-thread="' + t.id + '">Approve</button><button class="quiet" data-hide-thread="' + t.id + '">Hide</button></div></li>';
+    }).concat((cm.data || []).map(function (c) {
+      var where = c.post_id ? 'Comment on project <a href="completed.html?p=' + c.post_id + '">' + esc(titleOf(posts, c.post_id)) + "</a>"
+        : 'Reply in thread <a href="forum.html?t=' + c.thread_id + '">' + esc(titleOf(threads, c.thread_id)) + "</a>";
+      return "<li><strong>" + where + '</strong><div class="meta">By ' + esc(who(c.user_id)) + ", " + new Date(c.created_at).toLocaleString("en-GB") + "</div><p>" + esc(c.body) + "</p>" +
+        '<div class="row"><button data-approve-comment="' + c.id + '">Approve</button><button class="quiet" data-hide-comment="' + c.id + '">Hide</button></div></li>';
+    }));
+    document.getElementById("forum-review").innerHTML = items.join("") || "<li>Nothing waiting for approval.</li>";
+  }
+
+  async function loadListed() {
+    var r = await db.from("posts").select("id,title,user_id,published_at,created_at").eq("status", "published").eq("kind", "write-up").order("created_at", { ascending: false });
+    document.getElementById("listed").innerHTML = (r.data || []).map(function (p) {
+      return '<li><a href="completed.html?p=' + p.id + '"><strong>' + esc(p.title || "Untitled project") + '</strong></a><div class="meta">' + new Date(p.published_at || p.created_at).toLocaleDateString("en-GB") + "</div>" +
+        '<div class="row"><button class="quiet" data-reject="' + p.id + '">Remove from the site</button></div></li>';
+    }).join("") || "<li>No projects listed yet.</li>";
   }
 
   async function loadTeams() {
@@ -89,7 +121,7 @@
     }).join("") || "<li>No activity yet.</li>";
   }
 
-  async function refresh() { await loadPeople(); loadReview(); loadTeams(); loadEvents(); }
+  async function refresh() { await loadPeople(); loadReview(); loadForumReview(); loadListed(); loadTeams(); loadEvents(); }
 
   document.getElementById("team-form").addEventListener("submit", async function (e) {
     e.preventDefault();
@@ -100,8 +132,15 @@
 
   app.addEventListener("click", async function (e) {
     var t = e.target, v;
-    if ((v = t.getAttribute("data-publish"))) { await db.from("posts").update({ status: "published" }).eq("id", v); loadReview(); }
-    else if ((v = t.getAttribute("data-reject"))) { await db.from("posts").update({ status: "rejected" }).eq("id", v); loadReview(); }
+    if ((v = t.getAttribute("data-publish"))) { await db.from("posts").update({ status: "published" }).eq("id", v); loadReview(); loadListed(); }
+    else if ((v = t.getAttribute("data-reject"))) {
+      if (t.textContent.indexOf("Remove") === 0 && !confirm("Remove this project from the site? Its comments will stop showing too.")) return;
+      await db.from("posts").update({ status: "rejected" }).eq("id", v); loadReview(); loadListed();
+    }
+    else if ((v = t.getAttribute("data-approve-thread"))) { await db.from("threads").update({ status: "approved" }).eq("id", v); loadForumReview(); }
+    else if ((v = t.getAttribute("data-hide-thread"))) { await db.from("threads").update({ status: "hidden" }).eq("id", v); loadForumReview(); }
+    else if ((v = t.getAttribute("data-approve-comment"))) { await db.from("comments").update({ status: "approved" }).eq("id", v); loadForumReview(); }
+    else if ((v = t.getAttribute("data-hide-comment"))) { await db.from("comments").update({ status: "hidden" }).eq("id", v); loadForumReview(); }
     else if ((v = t.getAttribute("data-add"))) {
       var sel = document.querySelector('[data-add-select="' + v + '"]');
       if (!sel.value) return;
@@ -115,6 +154,6 @@
   refresh();
 })();
 </script>
-<footer class="wrap"><a href="index.html">Home</a><a href="questions.html">Questions</a><a href="projects.html">Projects</a><a href="privacy.html">Privacy</a></footer>
+<footer class="wrap"><a href="index.html">Home</a><a href="questions.html">Questions</a><a href="projects.html">Projects</a><a href="completed.html">Completed projects</a><a href="forum.html">Forum</a><a href="privacy.html">Privacy</a></footer>
 </body>
 </html>

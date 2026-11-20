@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Completed projects | AI Safety Research</title>
+<meta name="description" content="AI safety research projects that students have completed. Read them, comment on them and build on them.">
+<link rel="canonical" href="https://aisafetyresearch.co.uk/completed.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AI Safety Research">
+<meta property="og:title" content="Completed projects | AI Safety Research">
+<meta property="og:description" content="AI safety research projects that students have completed. Read them, comment on them and build on them.">
+<meta property="og:url" content="https://aisafetyresearch.co.uk/completed.html">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="community.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script src="auth.js"></script>
+<script src="forum.js"></script>
+</head>
+<body>
+<header class="wrap page-head" id="head">
+  <nav class="nav" aria-label="Site"><a class="secondary" href="index.html">Home</a><a class="secondary" href="forum.html">Forum</a></nav>
+  <h1>Completed projects</h1>
+  <p class="lede">Research that people finished through this site. Read it, leave a comment, or build on it.</p>
+</header>
+
+<main class="wrap" id="main">
+  <p class="caveat">Each project is described by its authors. We check that it fits the site, but we don’t review its quality or endorse its conclusions.</p>
+  <ul class="items" id="list" hidden></ul>
+  <p class="empty" id="empty" hidden>No completed projects yet. Finished one? Share it below and it will be the first.</p>
+  <p class="meta" id="loading">Loading…</p>
+
+  <section class="share" id="share" aria-labelledby="share-title">
+    <h2 id="share-title">Share a completed project</h2>
+    <p>A write-up, blog post, paper, notebook or code repository all count, including projects that didn’t find what you hoped.</p>
+    <ol>
+      <li>Sign in and open your account page.</li>
+      <li>Under <strong>Share a completed project</strong>, add a title, a link and a few sentences on what you did and found.</li>
+      <li>We read it, list it here, and email you. Then anyone can comment on it.</li>
+    </ol>
+    <a class="cta" href="account.html#share">Share your project</a>
+  </section>
+</main>
+
+<footer class="wrap">
+  Built by Zebedi Casajuana with support from <a href="https://www.eacambridge.org/">EA Cambridge</a>. <a href="completed.html">Completed projects</a> <a href="forum.html">Forum</a> <a href="login.html">Sign in</a> <a href="privacy.html">Privacy</a>
+</footer>
+
+<script>
+(async function () {
+  var esc = asr.esc, f = window.forum;
+  var id = parseInt(new URLSearchParams(location.search).get("p"), 10);
+  var loading = document.getElementById("loading");
+  var projects = await f.rpc("completed_projects");
+  loading.hidden = true;
+
+  function byline(p) {
+    var who = p.author + (p.coauthors ? ", " + p.coauthors : "");
+    return esc(who) + ", " + f.when(p.published_at) + (p.question_id ? ', on research question <a href="questions.html#' + esc(String(p.question_id).toLowerCase()) + '">' + esc(p.question_id) + "</a>" : "");
+  }
+  function safeLink(u) { return /^https?:\/\//i.test(u || "") ? u : ""; }
+
+  if (!id) {
+    var list = document.getElementById("list");
+    if (!projects.length) { document.getElementById("empty").hidden = false; return; }
+    list.innerHTML = projects.map(function (p) {
+      var summary = String(p.summary || "");
+      if (summary.length > 320) summary = summary.slice(0, 317).replace(/\s+\S*$/, "") + "…";
+      return '<li><h2><a href="completed.html?p=' + p.id + '">' + esc(p.title || "Untitled project") + "</a></h2>" +
+        '<p class="byline">' + byline(p) + "</p><p>" + esc(summary) + "</p>" +
+        '<p class="counts"><a href="completed.html?p=' + p.id + '#discussion">' + (p.comments == 1 ? "1 comment" : p.comments + " comments") + "</a></p></li>";
+    }).join("");
+    list.hidden = false;
+    return;
+  }
+
+  // One project, with its comments.
+  var p = projects.filter(function (x) { return x.id === id; })[0];
+  var head = document.getElementById("head"), main = document.getElementById("main");
+  head.querySelector("nav").innerHTML = '<a class="secondary" href="completed.html">All completed projects</a><a class="secondary" href="forum.html">Forum</a>';
+  if (!p) {
+    head.querySelector("h1").textContent = "Project not found";
+    head.querySelector(".lede").textContent = "It may have been removed, or it isn’t listed yet.";
+    main.innerHTML = '<p><a class="secondary" href="completed.html">See all completed projects</a></p>';
+    return;
+  }
+  document.title = (p.title || "Project") + " | AI Safety Research";
+  var h1 = head.querySelector("h1");
+  h1.textContent = p.title || "Untitled project";
+  h1.className = "long";
+  head.querySelector(".lede").outerHTML = '<p class="byline">' + byline(p) + "</p>";
+  var link = safeLink(p.link);
+  main.innerHTML = '<article class="article"><div class="body">' + f.prose(p.summary) + "</div>" +
+    (link ? '<a class="cta open" href="' + esc(link) + '">Open the project</a>' : "") + "</article>" +
+    '<section class="discussion" id="discussion" aria-label="Comments"></section>';
+  var user = await f.me();
+  await f.comments(document.getElementById("discussion"), { post: id }, user);
+  if (location.hash === "#discussion") document.getElementById("discussion").scrollIntoView();
+})();
+</script>
+</body>
+</html>

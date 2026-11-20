@@ -42,7 +42,15 @@
     pk.textContent = "You picked: " + q + ". We’ll remember it when you finish signing up.";
     pk.hidden = false;
   }
-  if (await asr.session()) { location.href = "account.html"; return; }
+  // Pages like the forum send people here with ?next= so they come back after signing in.
+  var next = new URLSearchParams(location.search).get("next") || "";
+  if (/^[a-z0-9-]+\.html(\?[a-z]=\d+)?$/.test(next)) {
+    try { localStorage.setItem("asr_return", next); } catch (e) {}
+  } else next = "";
+  if (await asr.session()) {
+    if (next) { try { localStorage.removeItem("asr_return"); } catch (e) {} }
+    location.href = next || "account.html"; return;
+  }
   document.getElementById("login-form").addEventListener("submit", async function (e) {
     e.preventDefault();
     var email = document.getElementById("email").value.trim();
@@ -55,6 +63,6 @@
   });
 })();
 </script>
-<footer class="wrap"><a href="index.html">Home</a><a href="questions.html">Questions</a><a href="projects.html">Projects</a><a href="privacy.html">Privacy</a></footer>
+<footer class="wrap"><a href="index.html">Home</a><a href="questions.html">Questions</a><a href="projects.html">Projects</a><a href="completed.html">Completed projects</a><a href="forum.html">Forum</a><a href="privacy.html">Privacy</a></footer>
 </body>
 </html>
