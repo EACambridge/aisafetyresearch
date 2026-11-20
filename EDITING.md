@@ -137,7 +137,8 @@ Matching menu > **Turn on weekly check-ins (Mondays)**. They're **off** at the m
 2. People are emailed within the hour when someone replies to their thread or comments on their project. They're never emailed about their own posts.
 3. On [admin.html](https://aisafetyresearch.co.uk/admin.html), **Forum and comments** lists the newest 30 posts. Click **Remove** on spam, personal attacks or anything that shares someone else's private details; **Put back** undoes it. Removed posts stay visible to their author, marked as removed.
 4. While signed in as an admin you'll also see **Remove** links on the forum and project pages themselves.
-5. Every page's footer lists every page. If you add a page, add it to the footer on every page so people can find it.
+5. **Automatic check.** Every five minutes the matching script (`moderateNewPosts`) has a free Gemini model read posts made since its last check, and takes down slurs and posts that are just emotional or personal attacks. Each post is read once only (the Script property `MODERATED_UNTIL` remembers where it got to). Everything it takes down is emailed to ea.cambr with the reason; use **Put back** on admin.html if it got one wrong. To stop it, delete the `moderateNewPosts` trigger in the matching Apps Script (Triggers, the clock icon).
+6. Every page's footer lists every page. If you add a page, add it to the footer on every page so people can find it.
 
 ### 7. Manage teams by hand
 
@@ -215,6 +216,7 @@ Never copy these anywhere else. To replace one, create a new key in the service,
 | Resend API key ("Supabase Integration") | Sign-in emails | Inside Supabase's SMTP settings (set up by Resend's Supabase integration) |
 | Gemini API key | Weekly research updates | GitHub repository > Settings > Secrets and variables > Actions > `GEMINI_API_KEY` |
 | Gemini API key | Idea checker | Idea checker Apps Script > Script properties > `GEMINI_API_KEY` |
+| Gemini API key (same key) | Forum moderation | Matching Apps Script > Script properties > `GEMINI_API_KEY` |
 | OpenAlex API key (optional) | Idea checker | Idea checker Script properties > `OPENALEX_API_KEY` |
 
 Supabase is retiring its older "legacy" keys in early 2027. Nothing here uses them, so no action is needed.
@@ -248,7 +250,7 @@ Supabase is retiring its older "legacy" keys in early 2027. Nothing here uses th
 ## Known gaps and open decisions
 
 1. **The first research-updates pull request (#1, from 7 November) is still waiting for review.** Until it's merged the research page is empty. The two Monday runs since then failed because Gemini was overloaded; the script has been fixed to cope.
-2. **Posts are not checked before they appear.** If spam becomes a problem, either turn approval back on (put the insert rules from `supabase/forum.sql` back, and post as "pending" in `forum.html` and `forum.js`), or have a free model screen each post in the hourly job. The idea checker already uses Gemini, so that key could be reused.
+2. **Posts appear before anyone checks them.** The automatic check takes down slurs and attacks within about five minutes. If spam becomes a problem, approval can be turned back on: put the insert rules from `supabase/forum.sql` back, and post as "pending" in `forum.html` and `forum.js`.
 3. **Nobody owns matching yet.** Someone needs to run the weekly routine.
 4. **The privacy notice names EA Cambridge as the data controller.** This was left to decide later.
 5. **No peer rating form or measurement yet.** The "How it works" tab in the matching spreadsheet lists what to measure: days from sign-up to intro, share of teams meeting in week one, share still active after 4 and 8 weeks, share finishing a write-up.
