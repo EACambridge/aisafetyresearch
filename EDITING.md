@@ -53,7 +53,7 @@ So the machinery exists to: collect sign-ups, suggest teams, introduce them fast
 | `index.html` | Home page, kept deliberately short: sign up, check your idea, find a question, our mission, learning resources |
 | `questions.html` | Research questions (reads the questions database) |
 | `projects.html` | Current projects (typed directly into the page) |
-| `guide.html` | The five-step guide to running a project, including where to find funding |
+| `guide.html` | "Helpful guide to start your project": five steps, including where to find funding |
 | `research.html` | Weekly research updates (reads `data/research-updates.json`). Not in the menu: the job runs in the background. |
 | `completed.html` | Completed projects: the list, and each project's own page with comments (`completed.html?p=` number) |
 | `forum.js`, `community.css` | Comment code and styling for the completed projects page |
