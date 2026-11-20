@@ -39,7 +39,7 @@ So the machinery exists to: collect sign-ups, suggest teams, introduce them fast
 | Matching spreadsheet | People, proposed teams, teams, check-ins, "Needs attention" | [AI Safety Research sign-ups](https://docs.google.com/spreadsheets/d/1tOuBfJgnmWL2-pd7lLVjQfm24I6I5WYrK6dZrPT4x9Q/edit). Its **Matching** menu runs everything. |
 | Matching code | Syncs sign-ups, suggests teams, writes intro emails, sends check-ins | Apps Script project ["AI Safety Research matching"](https://script.google.com/home/projects/1uBP-KoEEgbZDIFwIoK7xF7rD56N-kvpzrwUVD9-5iYS3_k5Ym9qz-Y-Y/edit) (Extensions > Apps Script from the spreadsheet). |
 | Questions database | The research questions, interest counts and teams shown on the site | [AI Safety Research: questions database](https://docs.google.com/spreadsheets/d/1uB6p3rnhhEJuFfcrdDS-MK-BhIAEdJHkNzcEsbmxNt0/edit). Published to the web as CSV; the site reads that. |
-| Completed projects and comments | Projects people share from their account (held for review), and comments on them (live straight away) | Stored with accounts in Supabase (tables `posts` and `comments`; set up by `supabase/forum.sql`, then `supabase/comments-live.sql`). The old forum's `threads` table is still there but nothing writes to it. Reviewed on [admin.html](https://aisafetyresearch.co.uk/admin.html). The old Google research submission form was closed on 20 Nov 2026. |
+| Completed projects and forum | Projects people share from their account (held for review); forum threads, replies and comments (live straight away) | Stored with accounts in Supabase (tables `posts`, `threads`, `comments`; set up by `supabase/forum.sql`, then `supabase/comments-live.sql`). Reviewed on [admin.html](https://aisafetyresearch.co.uk/admin.html). The old Google research submission form was closed on 20 Nov 2026. |
 | Weekly check-in form | The one-minute check-in emailed to matched people | [Form](https://docs.google.com/forms/d/1fWmtHbeLiXEDPYcVnx0fdM1X1ZMjvSfAG91lKR3VCxU/edit). Answers land in the "Check-ins" tab of the matching spreadsheet. |
 | Idea checker | The "Check your idea" page | Apps Script project ["AI Safety Research idea checker"](https://script.google.com/home/projects/14q2ur1BxnEl8yZD0dx82jFOfCBtW8RUw6M66PW9ByboVacC6EI3mZDqC/edit), run as a web app. Uses Google Gemini plus arXiv and OpenAlex or Crossref. |
 | Weekly research updates | Finds new papers for each question every Monday | GitHub Actions workflow `.github/workflows/research-updates.yml` running `scripts/research_updates.py`. It opens a pull request for someone to review; the research page only changes when that is merged. |
@@ -50,17 +50,18 @@ So the machinery exists to: collect sign-ups, suggest teams, introduce them fast
 
 | File | Page |
 |---|---|
-| `index.html` | Home page, kept deliberately short: sign up, check your idea, find a question, our mission, learning resources |
+| `index.html` | Home page. Its job is to get someone signing up, and to link to every other page. |
 | `questions.html` | Research questions (reads the questions database) |
 | `projects.html` | Current projects (typed directly into the page) |
 | `guide.html` | "Helpful guide to start your project": five steps, including where to find funding |
 | `research.html` | Weekly research updates (reads `data/research-updates.json`). Not in the menu: the job runs in the background. |
 | `completed.html` | Completed projects: the list, and each project's own page with comments (`completed.html?p=` number) |
-| `forum.js`, `community.css` | Comment code and styling for the completed projects page |
+| `forum.html` | The forum: thread list, starting a thread, and each thread's page with replies (`forum.html?t=` number) |
+| `forum.js`, `community.css` | Shared comment code and styling for the completed projects and forum pages |
 | `check.html` | Check your idea (calls the idea checker) |
 | `login.html` | Sign up or sign in |
 | `account.html` | The sign-up form, your team, sharing a completed project |
-| `admin.html` | Organiser page: review shared projects, hide comments, unlist projects, manage teams, see people. Only works for admins. |
+| `admin.html` | Organiser page: review shared projects, remove forum posts and comments, unlist projects, manage teams, see people. Only works for admins. |
 | `privacy.html` | Privacy notice |
 | `404.html` | Page not found |
 | `app.css`, `auth.js`, `supabase-config.js` | Shared styling and sign-in code for the account pages |
@@ -130,12 +131,13 @@ Matching menu > **Turn on weekly check-ins (Mondays)**. They're **off** at the m
 4. Listed projects appear on Completed projects straight away. The author is emailed automatically within the hour.
 5. To take a project down later, use **Remove from the site** under **Listed projects**. Its comments stop showing too.
 
-### 6. Keep an eye on comments
+### 6. Look after the forum and comments
 
-1. Comments on completed projects go live as soon as they're posted. Only signed-in people can comment, and only on listed projects.
-2. The project's author is emailed about each new comment within the hour. People are never emailed about their own comments.
-3. On [admin.html](https://aisafetyresearch.co.uk/admin.html), **Recent comments** lists the latest 30. Click **Hide** on spam, personal attacks or anything sharing someone else's private details; **Show again** undoes it. Hidden comments stay visible to their author, marked as hidden.
-4. While signed in as an admin you'll also see a **Hide** link under every comment on the project pages themselves.
+1. Forum threads, replies and comments on completed projects go live as soon as they're posted. Only signed-in people can post.
+2. People are emailed within the hour when someone replies to their thread or comments on their project. They're never emailed about their own posts.
+3. On [admin.html](https://aisafetyresearch.co.uk/admin.html), **Forum and comments** lists the newest 30 posts. Click **Remove** on spam, personal attacks or anything that shares someone else's private details; **Put back** undoes it. Removed posts stay visible to their author, marked as removed.
+4. While signed in as an admin you'll also see **Remove** links on the forum and project pages themselves.
+5. Every page's footer lists every page. If you add a page, add it to the footer on every page so people can find it.
 
 ### 7. Manage teams by hand
 
@@ -246,7 +248,7 @@ Supabase is retiring its older "legacy" keys in early 2027. Nothing here uses th
 ## Known gaps and open decisions
 
 1. **The first research-updates pull request (#1, from 7 November) is still waiting for review.** Until it's merged the research page is empty. The two Monday runs since then failed because Gemini was overloaded; the script has been fixed to cope.
-2. **Comments are not checked before they appear.** If spam becomes a problem, the old approval step can be turned back on: put the `comments insert own` rule from `supabase/forum.sql` back and change `forum.js` to post comments as "pending".
+2. **Posts are not checked before they appear.** If spam becomes a problem, either turn approval back on (put the insert rules from `supabase/forum.sql` back, and post as "pending" in `forum.html` and `forum.js`), or have a free model screen each post in the hourly job. The idea checker already uses Gemini, so that key could be reused.
 3. **Nobody owns matching yet.** Someone needs to run the weekly routine.
 4. **The privacy notice names EA Cambridge as the data controller.** This was left to decide later.
 5. **No peer rating form or measurement yet.** The "How it works" tab in the matching spreadsheet lists what to measure: days from sign-up to intro, share of teams meeting in week one, share still active after 4 and 8 weeks, share finishing a write-up.

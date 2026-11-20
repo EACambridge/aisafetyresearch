@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forum | AI Safety Research</title>
+<meta name="description" content="Ask for feedback on AI safety research in progress, find people to work with and discuss research questions.">
+<link rel="canonical" href="https://aisafetyresearch.co.uk/forum.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AI Safety Research">
+<meta property="og:title" content="Forum | AI Safety Research">
+<meta property="og:description" content="Ask for feedback on AI safety research in progress, find people to work with and discuss research questions.">
+<meta property="og:url" content="https://aisafetyresearch.co.uk/forum.html">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="community.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script src="auth.js"></script>
+<script src="forum.js"></script>
+</head>
+<body>
+<header class="wrap page-head" id="head">
+  <nav class="nav" aria-label="Site"><a class="secondary" href="index.html">Home</a><a class="secondary" href="completed.html">Completed projects</a></nav>
+  <h1>Forum</h1>
+  <p class="lede">Ask for feedback on work in progress, find people to work with, or talk through a research question.</p>
+</header>
+
+<main class="wrap" id="main">
+  <p class="caveat">Posts appear straight away. Be kind and specific: say what you tried, what you’re stuck on, or what would help.</p>
+  <section id="mine" hidden></section>
+  <ul class="items" id="list" hidden></ul>
+  <p class="empty" id="empty" hidden>No threads yet. Start the first one below.</p>
+  <p class="meta" id="loading">Loading…</p>
+
+  <section class="share" id="start" aria-labelledby="start-title">
+    <h2 id="start-title">Start a thread</h2>
+    <div id="start-box"></div>
+  </section>
+</main>
+
+<footer class="wrap">
+  Built by Zebedi Casajuana with support from <a href="https://www.eacambridge.org/">EA Cambridge</a>. <a href="questions.html">Questions</a> <a href="check.html">Check your idea</a> <a href="projects.html">Current projects</a> <a href="guide.html">Helpful guide</a> <a href="completed.html">Completed projects</a> <a href="forum.html">Forum</a> <a href="login.html">Sign in</a> <a href="privacy.html">Privacy</a>
+</footer>
+
+<script>
+(async function () {
+  var esc = asr.esc, f = window.forum;
+  var id = parseInt(new URLSearchParams(location.search).get("t"), 10);
+  var loading = document.getElementById("loading");
+  var user = await f.me();
+
+  function replies(n) { return n == 1 ? "1 reply" : n + " replies"; }
+
+  if (!id) {
+    var threads = await f.rpc("forum_threads");
+    loading.hidden = true;
+    var list = document.getElementById("list");
+    if (threads.length) {
+      list.innerHTML = threads.map(function (t) {
+        return '<li><h2><a href="forum.html?t=' + t.id + '">' + esc(t.title) + "</a></h2>" +
+          '<p class="byline">Started by ' + esc(t.author) + ", " + f.when(t.created_at) + "</p>" +
+          '<p class="counts"><a href="forum.html?t=' + t.id + '#discussion">' + replies(t.replies) + "</a>" +
+          (t.replies > 0 ? '<span class="meta">, last activity ' + f.when(t.last_activity) + "</span>" : "") + "</p></li>";
+      }).join("");
+      list.hidden = false;
+    } else {
+      document.getElementById("empty").hidden = false;
+    }
+
+    // Your own threads that are waiting for approval.
+    async function loadMine() {
+      if (!user) return;
+      var r = await asr.client.from("threads").select("id,title,status,created_at").eq("user_id", user.id).neq("status", "approved").order("created_at", { ascending: false });
+      var box = document.getElementById("mine");
+      if (!r.data || !r.data.length) { box.hidden = true; return; }
+      box.innerHTML = '<p class="meta">Your threads not yet showing:</p><ul class="items" style="margin-bottom:2rem">' + r.data.map(function (t) {
+        return '<li class="pending"><h2>' + esc(t.title) + '</h2><p class="byline">' + (t.status === "pending" ? "Waiting for approval" : "Removed by an organiser") +
+          ", posted " + f.when(t.created_at) + '</p><button class="link" data-del-thread="' + t.id + '">Delete</button></li>';
+      }).join("") + "</ul>";
+      box.hidden = false;
+    }
+    document.getElementById("mine").addEventListener("click", async function (e) {
+      var v = e.target.getAttribute("data-del-thread");
+      if (!v || !confirm("Delete this thread?")) return;
+      await asr.client.from("threads").delete().eq("id", v).eq("user_id", user.id); loadMine();
+    });
+    await loadMine();
+
+    var start = document.getElementById("start-box");
+    if (!user) { start.innerHTML = '<p>Anyone can read the forum. To post, sign in with your email; it takes a minute.</p><p class="signin">' + f.signInLink("Sign in to start a thread") + "</p>"; return; }
+    start.innerHTML = '<form id="thread-form"><label for="t-title">Title</label><input type="text" id="t-title" maxlength="150" required placeholder="For example: Feedback wanted on our sycophancy evaluation">' +
+      '<label for="t-body">Your post</label><textarea id="t-body" maxlength="5000" required placeholder="What are you working on or wondering about? Links are welcome."></textarea>' +
+      '<p class="hint">You’ll appear as <strong>' + esc(user.name) + '</strong> (change this on <a href="account.html">your account</a>). Your thread appears straight away.</p>' +
+      '<button type="submit">Post thread</button><div id="t-status" aria-live="polite"></div></form>';
+    document.getElementById("thread-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var st = document.getElementById("t-status");
+      var row = { user_id: user.id, title: document.getElementById("t-title").value.trim(), body: document.getElementById("t-body").value.trim() };
+      if (row.title.length < 3 || !row.body) { st.innerHTML = '<p class="msg">Please add a title and a post.</p>'; return; }
+      row.status = "approved";
+      var r = await asr.client.from("threads").insert(row);
+      // Until supabase/comments-live.sql has been run, the database only accepts threads held for approval.
+      if (r.error) { row.status = "pending"; r = await asr.client.from("threads").insert(row); }
+      if (r.error) { st.innerHTML = '<p class="msg">Couldn’t post: ' + esc(r.error.message) + "</p>"; return; }
+      asr.log("started_thread", { title: row.title });
+      e.target.reset();
+      if (row.status === "approved") { location.href = "forum.html"; return; }
+      st.innerHTML = '<p class="msg">Thanks. Your thread will appear once an organiser has read it.</p>';
+      loadMine();
+    });
+    return;
+  }
+
+  // One thread, with its replies.
+  var head = document.getElementById("head"), main = document.getElementById("main");
+  head.querySelector("nav").innerHTML = '<a class="secondary" href="forum.html">All threads</a><a class="secondary" href="completed.html">Completed projects</a>';
+  var t = (await f.rpc("forum_thread", { tid: id }))[0];
+  if (!t) {
+    head.querySelector("h1").textContent = "Thread not found";
+    head.querySelector(".lede").textContent = "It may have been removed, or it’s still waiting for approval.";
+    main.innerHTML = '<p><a class="secondary" href="forum.html">Back to the forum</a></p>';
+    return;
+  }
+  document.title = t.title + " | Forum | AI Safety Research";
+  var h1 = head.querySelector("h1");
+  h1.textContent = t.title;
+  h1.className = "long";
+  head.querySelector(".lede").outerHTML = '<p class="byline">Started by ' + esc(t.author) + ", " + f.when(t.created_at) + "</p>";
+  main.innerHTML = '<article class="article"><div class="body">' + f.prose(t.body) + "</div>" +
+    (user && user.admin ? '<button class="link" id="hide-thread">Remove this thread</button>' : "") + "</article>" +
+    '<section class="discussion" id="discussion" aria-label="Replies"></section>';
+  if (user && user.admin) document.getElementById("hide-thread").addEventListener("click", async function () {
+    if (!confirm("Remove this thread from the forum?")) return;
+    await asr.client.from("threads").update({ status: "hidden" }).eq("id", id);
+    location.href = "forum.html";
+  });
+  await f.comments(document.getElementById("discussion"), { thread: id }, user,
+    { one: "reply", many: "replies", add: "Add a reply", button: "Post reply", none: "No replies yet." });
+  if (location.hash === "#discussion") document.getElementById("discussion").scrollIntoView();
+})();
+</script>
+</body>
+</html>

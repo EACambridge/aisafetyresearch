@@ -23,7 +23,7 @@
 </head>
 <body>
 <header class="wrap page-head" id="head">
-  <nav class="nav" aria-label="Site"><a class="secondary" href="index.html">Back to home</a></nav>
+  <nav class="nav" aria-label="Site"><a class="secondary" href="index.html">Home</a><a class="secondary" href="forum.html">Forum</a></nav>
   <h1>Completed projects</h1>
   <p class="lede">Research that people finished through this site. Read it, leave a comment, or build on it.</p>
 </header>
@@ -47,7 +47,7 @@
 </main>
 
 <footer class="wrap">
-  Built by Zebedi Casajuana with support from <a href="https://www.eacambridge.org/">EA Cambridge</a>. <a href="completed.html">Completed projects</a> <a href="login.html">Sign in</a> <a href="privacy.html">Privacy</a>
+  Built by Zebedi Casajuana with support from <a href="https://www.eacambridge.org/">EA Cambridge</a>. <a href="questions.html">Questions</a> <a href="check.html">Check your idea</a> <a href="projects.html">Current projects</a> <a href="guide.html">Helpful guide</a> <a href="completed.html">Completed projects</a> <a href="forum.html">Forum</a> <a href="login.html">Sign in</a> <a href="privacy.html">Privacy</a>
 </footer>
 
 <script>
@@ -81,7 +81,7 @@
   // One project, with its comments.
   var p = projects.filter(function (x) { return x.id === id; })[0];
   var head = document.getElementById("head"), main = document.getElementById("main");
-  head.querySelector("nav").innerHTML = '<a class="secondary" href="completed.html">All completed projects</a>';
+  head.querySelector("nav").innerHTML = '<a class="secondary" href="completed.html">All completed projects</a><a class="secondary" href="forum.html">Forum</a>';
   if (!p) {
     head.querySelector("h1").textContent = "Project not found";
     head.querySelector(".lede").textContent = "It may have been removed, or it isn’t listed yet.";

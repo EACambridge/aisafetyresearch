@@ -1,4 +1,4 @@
-// Shared code for comments on completed projects. Comments go live straight away; admins can hide them.
+// Shared code for comments on completed projects and forum threads. Posts go live straight away; admins can remove them.
 // Needs supabase-js, supabase-config.js and auth.js loaded first.
 (function () {
   var esc = function (s) { return window.asr.esc(s); };
@@ -60,10 +60,10 @@
       }
       var items = shown.map(function (c) {
         return '<li><div class="who">' + esc(c.author) + ' <span class="meta">' + when(c.created_at) + "</span></div>" + prose(c.body) +
-          (user && user.admin ? '<button class="link" data-hide-comment="' + c.id + '">Hide this comment</button>' : "") + "</li>";
+          (user && user.admin ? '<button class="link" data-hide-comment="' + c.id + '">Remove</button>' : "") + "</li>";
       }).concat(mine.map(function (c) {
         return '<li class="pending"><div class="who">You <span class="meta">' + when(c.created_at) + ", " +
-          (c.status === "pending" ? "waiting for approval" : "hidden by an organiser") + "</span></div>" + prose(c.body) +
+          (c.status === "pending" ? "waiting for approval" : "removed by an organiser") + "</span></div>" + prose(c.body) +
           '<button class="link" data-del-comment="' + c.id + '">Delete</button></li>';
       }));
       box.querySelector(".comment-list").innerHTML = items.length ? items.join("") : '<li class="none">' + words.none + "</li>";
@@ -85,7 +85,7 @@
         if (!confirm("Delete your comment?")) return;
         await asr.client.from("comments").delete().eq("id", v).eq("user_id", user.id); load();
       } else if ((v = t.getAttribute("data-hide-comment"))) {
-        if (!confirm("Hide this comment from the site?")) return;
+        if (!confirm("Remove this comment from the site?")) return;
         await asr.client.from("comments").update({ status: "hidden" }).eq("id", v); load();
       }
     });

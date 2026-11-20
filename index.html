@@ -194,6 +194,16 @@
   }
   .why p + p { margin-top: 1rem; }
 
+  /* Join */
+  .join { padding-block: 4rem; border-top: 1px solid var(--rule); }
+  .join h2 {
+    font-variation-settings: "wdth" 75;
+    font-weight: 800;
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    margin-bottom: 0.75rem;
+  }
+  .join p { max-width: 55ch; color: var(--ink-soft); }
+  .join .cta { margin-top: 1.75rem; }
   footer a + a, footer a:last-child { margin-left: 0.75rem; }
 
   /* Footer: least relevant, smallest */
@@ -238,41 +248,30 @@
   </svg>
   <div class="hero-text">
     <h1>Sign up to do AI safety research now</h1>
-    <p class="lede">We’ll match you with a small team. It takes about three minutes, and it’s free.</p>
+    <p class="lede">Find someone to work with, pick a question worth answering, and check it hasn’t already been done. Sign up now and start by the end of the week.</p>
     <div class="actions">
       <a class="cta" href="login.html">Sign up to join a project now</a>
+      <a class="secondary" href="questions.html">Browse research questions</a>
     </div>
   </div>
 </header>
 
 <main>
-  <section class="wrap research" id="check" aria-labelledby="check-title">
-    <h2 id="check-title">Check your idea hasn’t been done</h2>
-    <p>Describe your idea and we’ll find any papers that overlap with it, so you know what to read and where yours is new.</p>
+  <section class="wrap research" id="research" aria-labelledby="research-title">
+    <h2 id="research-title">What’s already being researched</h2>
+    <p>Before you start, check whether anyone is already doing your investigation. Describe your idea and we’ll find any papers that overlap with it, or browse current projects on this site and find one to join. When you’re stuck or want feedback, ask on the forum.</p>
     <div class="actions" style="margin-top:1.75rem">
       <a class="cta" href="check.html">Check your idea</a>
+      <a class="secondary" href="projects.html">See current projects</a>
+      <a class="secondary" href="completed.html">Browse completed projects</a>
+      <a class="secondary" href="forum.html">Ask the forum</a>
     </div>
   </section>
 
-  <section class="wrap research" id="questions" aria-labelledby="questions-title">
-    <h2 id="questions-title">Find a good research question</h2>
-    <p>Questions a small team can make real progress on in a term, each with a place to start reading.</p>
-    <div class="actions" style="margin-top:1.75rem">
-      <a class="cta" href="questions.html">Browse research questions</a>
-    </div>
-  </section>
-
-  <section class="wrap why" aria-labelledby="why-title">
-    <svg class="slash-why" viewBox="0 0 600 200" overflow="visible" aria-hidden="true">
-      <g fill="currentColor" transform="rotate(-9 300 100)">
-        <path filter="url(#rough)" d="M10 90 C 180 82, 400 78, 590 74 L 590 128 C 400 132, 190 136, 15 142 Z"/>
-      </g>
-    </svg>
-    <div class="why-text">
-      <h2 id="why-title">Our mission</h2>
-      <p>The best way to learn research is by doing it. All you need to begin is a good question, someone to work with, and a reason to keep going.</p>
-      <p>This site is for undergraduates and others who are new to AI safety research. Every project teaches you something, and some turn into real contributions to the field. Our <a href="guide.html">helpful guide to start your project</a> covers planning, funding and sharing what you found.</p>
-    </div>
+  <section class="wrap research" id="funding" aria-labelledby="funding-title">
+    <h2 id="funding-title">Get your project funded</h2>
+    <p>Work out the most impactful version of your research, then apply for funding. Our guide walks you through it and links to the funders.</p>
+    <p style="margin-top:1.25rem"><a class="secondary" href="guide.html">Read the helpful guide to start your project</a></p>
   </section>
 
   <section class="wrap learn" id="learn" aria-labelledby="learn-title">
@@ -286,10 +285,37 @@
       <li><a href="https://www.aisafety.com/">AISafety.com</a><span>A directory of courses, communities, funding and other resources.</span></li>
     </ul>
   </section>
+
+  <section class="wrap why" aria-labelledby="why-title">
+    <svg class="slash-why" viewBox="0 0 600 200" overflow="visible" aria-hidden="true">
+      <g fill="currentColor" transform="rotate(-9 300 100)">
+        <path filter="url(#rough)" d="M10 90 C 180 82, 400 78, 590 74 L 590 128 C 400 132, 190 136, 15 142 Z"/>
+      </g>
+    </svg>
+    <div class="why-text">
+      <h2 id="why-title">Why start this way</h2>
+      <p>The best way to learn research is by doing it. All you need to begin is a good question, someone to work with, and a reason to keep going.</p>
+      <p>Every project teaches you something, and some turn into real contributions to the field. If yours goes well, we can help you find mentored programmes and other opportunities to take it further.</p>
+    </div>
+  </section>
+
+  <section class="wrap research" id="how" aria-labelledby="how-title">
+    <h2 id="how-title">Who this is for and how matching works</h2>
+    <p>This site is for undergraduates and others who are new to AI safety research. If you’ve already done supervised research, for example through SPAR, MARS or Pivotal, or you’re doing a PhD, those programmes will probably suit you better.</p>
+    <p style="margin-top:1rem">We match people mainly by the question or topic they pick, so your teammates may have more or less experience than you. You can tell us on the form if you’d rather work with people at a similar level. A mentor isn’t guaranteed.</p>
+    <p style="margin-top:1rem">Once you’re matched, your team chooses how to stay in touch, and we send a short check-in each week. If the team isn’t working, say so in a check-in and we’ll try to rematch you. If we don’t hear from you for about three weeks, we’ll take you out of the matching pool; you can rejoin at any time.</p>
+    <p style="margin-top:1rem">This site is a first step for getting started. It doesn’t judge the quality or impact of anyone’s project.</p>
+  </section>
+
+  <section class="wrap join" id="join" aria-labelledby="join-title">
+    <h2 id="join-title">Ready to start?</h2>
+    <p>Tell us which role you’d like, what you’re interested in and when you’re free, and we’ll match you with a team.</p>
+    <a class="cta" href="login.html">Sign up to join a project now</a>
+  </section>
 </main>
 
 <footer class="wrap">
-  Built by Zebedi Casajuana with support from <a href="https://www.eacambridge.org/">EA Cambridge</a>. <a href="projects.html">Current projects</a> <a href="guide.html">Helpful guide to start your project</a> <a href="completed.html">Completed projects</a> <a href="login.html">Sign in</a> <a href="privacy.html">Privacy</a>
+  Built by Zebedi Casajuana with support from <a href="https://www.eacambridge.org/">EA Cambridge</a>. <a href="questions.html">Questions</a> <a href="check.html">Check your idea</a> <a href="projects.html">Current projects</a> <a href="guide.html">Helpful guide</a> <a href="completed.html">Completed projects</a> <a href="forum.html">Forum</a> <a href="login.html">Sign in</a> <a href="privacy.html">Privacy</a>
 </footer>
 
 </body>
