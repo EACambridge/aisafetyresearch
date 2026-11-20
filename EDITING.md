@@ -1,6 +1,6 @@
 # How aisafetyresearch.co.uk works, and how to edit it
 
-This guide is for whoever looks after the site next. It explains every moving part in plain English and gives step-by-step instructions for the edits you're most likely to make. Last checked: 19 November 2026.
+This guide is for whoever looks after the site next. It explains every moving part in plain English and gives step-by-step instructions for the edits you're most likely to make. Last checked: 20 November 2026.
 
 If you only read one section, read **Before you change anything** and the edit you need under **Common edits**.
 
@@ -34,12 +34,12 @@ So the machinery exists to: collect sign-ups, suggest teams, introduce them fast
 | Website pages | Everything people see at aisafetyresearch.co.uk | GitHub repository [EACambridge/aisafetyresearch](https://github.com/EACambridge/aisafetyresearch), signed in as EACambridge. Changes go live about a minute after you commit. |
 | Hosting | Serves the pages | GitHub Pages (repository Settings > Pages). Free. |
 | Domain name | aisafetyresearch.co.uk | names.co.uk (DNS records). Don't touch the four GitHub A records, the www record or the `mail` records, or the site or sign-in emails will stop working. |
-| Accounts | Sign-in, sign-up answers, teams, write-ups | Supabase project "EACambridge's Project" (`vidkjapmgeuomrqduycm`), hosted in Frankfurt: [dashboard](https://supabase.com/dashboard/project/vidkjapmgeuomrqduycm). Free plan. |
+| Accounts | Sign-in, sign-up answers, teams, completed projects, forum threads and comments | Supabase project "EACambridge's Project" (`vidkjapmgeuomrqduycm`), hosted in Frankfurt: [dashboard](https://supabase.com/dashboard/project/vidkjapmgeuomrqduycm). Free plan. |
 | Sign-in emails | Sends the "Email me a link" emails | Resend (resend.com, signed in as ea.cambr), from team@mail.aisafetyresearch.co.uk. Supabase sends through it (Supabase > Authentication > Emails > SMTP Settings). |
 | Matching spreadsheet | People, proposed teams, teams, check-ins, "Needs attention" | [AI Safety Research sign-ups](https://docs.google.com/spreadsheets/d/1tOuBfJgnmWL2-pd7lLVjQfm24I6I5WYrK6dZrPT4x9Q/edit). Its **Matching** menu runs everything. |
 | Matching code | Syncs sign-ups, suggests teams, writes intro emails, sends check-ins | Apps Script project ["AI Safety Research matching"](https://script.google.com/home/projects/1uBP-KoEEgbZDIFwIoK7xF7rD56N-kvpzrwUVD9-5iYS3_k5Ym9qz-Y-Y/edit) (Extensions > Apps Script from the spreadsheet). |
 | Questions database | The research questions, interest counts and teams shown on the site | [AI Safety Research: questions database](https://docs.google.com/spreadsheets/d/1uB6p3rnhhEJuFfcrdDS-MK-BhIAEdJHkNzcEsbmxNt0/edit). Published to the web as CSV; the site reads that. |
-| Research submissions | Form for sharing finished work, and its responses | [Form](https://docs.google.com/forms/d/1IhCUD11Qd-Rj_ubaqd_ss7rYxUDW3Cdq6Ev9oer47qw/edit) and [responses sheet](https://docs.google.com/spreadsheets/d/11raz2PCOFZv8GWm_wmzcPFUzFUe2yiwIPQ29cYGta0k/edit). Only the "Published" tab is public. |
+| Completed projects and forum | Projects people share from their account, forum threads, and comments; all held for approval | Stored with accounts in Supabase (tables `posts`, `threads`, `comments`; set up by `supabase/forum.sql`). Reviewed on [admin.html](https://aisafetyresearch.co.uk/admin.html). The old Google research submission form was closed on 20 Nov 2026. |
 | Weekly check-in form | The one-minute check-in emailed to matched people | [Form](https://docs.google.com/forms/d/1fWmtHbeLiXEDPYcVnx0fdM1X1ZMjvSfAG91lKR3VCxU/edit). Answers land in the "Check-ins" tab of the matching spreadsheet. |
 | Idea checker | The "Check your idea" page | Apps Script project ["AI Safety Research idea checker"](https://script.google.com/home/projects/14q2ur1BxnEl8yZD0dx82jFOfCBtW8RUw6M66PW9ByboVacC6EI3mZDqC/edit), run as a web app. Uses Google Gemini plus arXiv and OpenAlex or Crossref. |
 | Weekly research updates | Finds new papers for each question every Monday | GitHub Actions workflow `.github/workflows/research-updates.yml` running `scripts/research_updates.py`. It opens a pull request for someone to review; the research page only changes when that is merged. |
@@ -54,11 +54,14 @@ So the machinery exists to: collect sign-ups, suggest teams, introduce them fast
 | `questions.html` | Research questions (reads the questions database) |
 | `projects.html` | Current projects (typed directly into the page) |
 | `research.html` | Weekly research updates (reads `data/research-updates.json`) |
-| `published.html` | Finished research (reads the submissions "Published" tab and approved account write-ups) |
+| `completed.html` | Completed projects: the list, and each project's own page with comments (`completed.html?p=` number) |
+| `forum.html` | The forum: thread list, starting a thread, and each thread's page with replies (`forum.html?t=` number) |
+| `forum.js`, `community.css` | Shared comment code and styling for those two pages |
+| `published.html` | Old address; sends visitors on to `completed.html` |
 | `check.html` | Check your idea (calls the idea checker) |
 | `login.html` | Sign up or sign in |
-| `account.html` | The sign-up form, your team, posting write-ups |
-| `admin.html` | Organiser page: review write-ups, manage teams, see people. Only works for admins. |
+| `account.html` | The sign-up form, your team, sharing a completed project |
+| `admin.html` | Organiser page: approve projects and forum posts, unlist projects, manage teams, see people. Only works for admins. |
 | `privacy.html` | Privacy notice |
 | `404.html` | Page not found |
 | `app.css`, `auth.js`, `supabase-config.js` | Shared styling and sign-in code for the account pages |
@@ -71,11 +74,12 @@ So the machinery exists to: collect sign-ups, suggest teams, introduce them fast
 1. They click **Sign up to join a project** (or **Pick this question** on the questions page) and land on `login.html`. If they picked a question, the page remembers it.
 2. They enter their email. Supabase sends a link through Resend. New people get the "Confirm your email address" email; returning people get "Your sign-in link".
 3. The link opens `account.html`. The first time, they fill in the sign-up questions and tick the privacy box, then click **Join matching**. Answers are saved to their profile in Supabase.
-4. **Every hour**, the matching script copies new sign-ups into the **People** tab as "Waiting", and updates the answers of anyone still waiting. It also emails ea.cambr if someone has posted a write-up for review.
+4. **Every hour**, the matching script copies new sign-ups into the **People** tab as "Waiting", and updates the answers of anyone still waiting. It also emails ea.cambr about anything new waiting for review, and emails people when their project or thread goes live or gets an approved comment.
 5. An organiser runs the weekly routine (below): **Suggest teams**, approves the sensible ones, and runs **Create intro emails**. This drafts one email per team in ea.cambr's Gmail, marks the people "Matched", lists the team on the questions page, and adds the team to its members' account pages.
 6. Once weekly check-ins are on, matched people get a check-in every Monday. Their answers update People automatically. Asking to be rematched puts them back in the pool; choosing to leave removes them.
 7. No reply for 14 days adds a nudge to the next email. After 21 days they're marked "Inactive" and left out of matching. People still waiting get one "still interested?" email at 14 days.
-8. When a team finishes, they share their work through the submission form or from their account page. An organiser approves it and it appears on `published.html`.
+8. When a team finishes, someone shares the project from their account page. An organiser lists it and it appears on `completed.html`, where signed-in people can comment.
+9. At any point, people can ask for feedback, find teammates or discuss questions on `forum.html`. Every thread, reply and comment is held until an organiser approves it.
 
 People statuses in the People tab: **Waiting, Proposed, Matched, Rematch requested, Inactive, Left.**
 
@@ -120,18 +124,21 @@ How teams are suggested: grouped by question (own questions by first area of int
 
 Matching menu > **Turn on weekly check-ins (Mondays)**. They're **off** at the moment, because no teams exist yet. Turn them on once the first teams are introduced. To send a round immediately: **Send this week's check-ins now** (it shows how many people will be emailed and asks first).
 
-### 5. Review research submitted through the form
+### 5. Review shared projects
 
-1. You'll get an email at ea.cambr titled "New research submitted".
-2. Open the [responses sheet](https://docs.google.com/spreadsheets/d/11raz2PCOFZv8GWm_wmzcPFUzFUe2yiwIPQ29cYGta0k/edit), read the work, and tick **Publish on site** (column J) if it fits. Use **Reviewer notes** (column K) for your reasons.
-3. **Check:** it appears on the finished research page within about five minutes. Email the author to tell them.
-4. To take something down, untick the box.
-
-### 6. Review a write-up posted from an account
-
-1. The hourly sync emails ea.cambr when one arrives ("write-up waiting for review").
+1. The hourly sync emails ea.cambr when something is waiting ("... waiting for review on AI Safety Research").
 2. Sign in on the site as ea.cambr@gmail.com and open [admin.html](https://aisafetyresearch.co.uk/admin.html).
-3. Under **Write-ups waiting for review**, click **Publish** or **Don't publish**. Published ones appear on the finished research page straight away. Email the author.
+3. Under **Projects waiting for review**, read the summary and open the link. Click **List it** if it's real AI safety work, described honestly, with a link that opens. Otherwise click **Don't list** and email the author to say why.
+4. Listed projects appear on Completed projects straight away. The author is emailed automatically within the hour.
+5. To take a project down later, use **Remove from the site** under **Listed projects**. Its comments stop showing too.
+
+### 6. Approve forum threads, replies and comments
+
+1. Same email, same page: look under **Forum posts waiting for approval**.
+2. **Approve** anything on-topic and civil. **Hide** spam, personal attacks, and anything sharing someone else's private details. Hidden posts stay visible to their author, marked "not shown".
+3. When a comment on a project or a reply in a thread is approved, the project's or thread's author is emailed within the hour. People are never emailed about their own comments.
+4. While signed in as an admin, you'll also see **Hide** links under every approved thread and comment on the public pages, for anything that slips through.
+5. Aim to check at least every couple of days. A forum where posts sit unapproved for a week feels dead, and that is the main way it could fail.
 
 ### 7. Manage teams by hand
 
@@ -172,7 +179,7 @@ Work through every place their details can be:
 1. **Account:** Supabase dashboard > Authentication > Users > find them > Delete user. This removes their profile, posts and activity. (They can also do it themselves from their account page.)
 2. **Matching spreadsheet:** delete their rows in People, Check-ins and, if they used the old form, "Form Responses 1". Remove their name and email from any rows in Proposed teams and Teams.
 3. **Questions database:** remove their name from **Members shown on site** (column O).
-4. **Research submissions sheet:** delete any rows they submitted.
+4. **Projects, forum threads and comments** are deleted automatically when their account is deleted in step 1. To remove one item only, use admin.html or ask them to delete it.
 5. **Gmail:** delete intro or check-in threads if they ask.
 6. Reply to confirm it's done.
 
@@ -218,7 +225,7 @@ Supabase is retiring its older "legacy" keys in early 2027. Nothing here uses th
 1. **Sign-in emails:** Supabase allows 25 an hour (Authentication > Rate limits), and Resend's free plan allows 100 a day and 3,000 a month. A big publicity push could hit these; if so, raise the Supabase limit and consider Resend's paid plan.
 2. **Check-in and intro emails** come from ea.cambr's Gmail, which can email about 100 people a day from scripts.
 3. **Supabase free plan** pauses a project after a week without activity. The keep-alive job prevents this. If the site says accounts aren't working, open the Supabase dashboard and click **Restore**.
-4. **Google's published copies** of the questions and submissions sheets refresh every few minutes, so sheet edits take up to about five minutes to show on the site.
+4. **Google's published copy** of the questions sheet refreshes every few minutes, so sheet edits take up to about five minutes to show on the site.
 5. **Gemini's free tier** is sometimes overloaded. The research job now sends papers in batches of 40 and tries a second model, so one slow request no longer sinks the whole week.
 
 ---
@@ -240,7 +247,7 @@ Supabase is retiring its older "legacy" keys in early 2027. Nothing here uses th
 ## Known gaps and open decisions
 
 1. **The first research-updates pull request (#1, from 7 November) is still waiting for review.** Until it's merged the research page is empty. The two Monday runs since then failed because Gemini was overloaded; the script has been fixed to cope.
-2. **Account "check-ins" go nowhere.** The account page lets people post a check-in, but it's only stored privately; organisers read the weekly check-in form instead. Either remove that option from `account.html` or add a list of them to admin.html.
+2. **The forum starts empty.** An empty forum puts people off posting. Before promoting it, have two or three committee members start real threads (for example, feedback wanted on a current project, or "looking for a teammate on Q3"), and approve posts quickly in the first few weeks.
 3. **Nobody owns matching yet.** Someone needs to run the weekly routine.
 4. **The privacy notice names EA Cambridge as the data controller.** This was left to decide later.
 5. **No peer rating form or measurement yet.** The "How it works" tab in the matching spreadsheet lists what to measure: days from sign-up to intro, share of teams meeting in week one, share still active after 4 and 8 weeks, share finishing a write-up.
