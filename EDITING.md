@@ -72,8 +72,8 @@ So the machinery exists to: collect sign-ups, suggest teams, introduce them fast
 ## How a person moves through the system
 
 1. They click **Sign up to join a project** (or **Pick this question** on the questions page) and land on `login.html`. If they picked a question, the page remembers it.
-2. They enter their email. Supabase sends a link through Resend. New people get the "Confirm your email address" email; returning people get "Your sign-in link".
-3. The link opens `account.html`. The first time, they fill in the sign-up questions and tick the privacy box, then click **Join matching**. Answers are saved to their profile in Supabase.
+2. They enter their email. Supabase sends an email through Resend with an 8-digit code (subject "Your code: ..."), and they type the code on the same page. The email also has a link back to `login.html` with a **Continue** button, for anyone who prefers to click.
+3. They land on `account.html`. The first time, they fill in the sign-up questions and tick the privacy box, then click **Join matching**. Answers are saved to their profile in Supabase.
 4. **Every hour**, the matching script copies new sign-ups into the **People** tab as "Waiting", and updates the answers of anyone still waiting. It also emails ea.cambr about anything new waiting for review, and emails people when their project or thread goes live or gets an approved comment.
 5. An organiser runs the weekly routine (below): **Suggest teams**, approves the sensible ones, and runs **Create intro emails**. This drafts one email per team in ea.cambr's Gmail, marks the people "Matched", lists the team on the questions page, and adds the team to its members' account pages.
 6. Once weekly check-ins are on, matched people get a check-in every Monday. Their answers update People automatically. Asking to be rematched puts them back in the pool; choosing to leave removes them.
@@ -236,8 +236,8 @@ Supabase is retiring its older "legacy" keys in early 2027. Nothing here uses th
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Sign-in link never arrives | Spam folder, rate limit, or Resend issue | Check spam; Supabase > Authentication > Logs; Resend dashboard > Emails |
-| Link says it has expired | Opened twice or after an hour | Request a new one |
+| Sign-in code never arrives | Spam or junk folder, rate limit, or Resend issue | Check spam; Supabase > Authentication > Logs; Resend dashboard > Emails |
+| Code doesn't work, or the link says it has expired | An older code, more than an hour old, or (for links) an email scanner opened it first | Send a new code from the sign-in page and use the newest email |
 | "Accounts aren't switched on yet" or account page won't load | Supabase project paused | Supabase dashboard > Restore project |
 | New sign-ups not appearing in People | Hourly sync failing | Matching Apps Script > Executions; look for errors from `hourlySync`. A missing or replaced `SUPABASE_SECRET_KEY` is the usual cause. |
 | Questions page shows no questions | Published CSV link broken | Questions database > File > Share > Publish to web: Sheet1 must be published as CSV |
