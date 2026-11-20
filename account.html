@@ -171,7 +171,7 @@
   var app = document.getElementById("app");
   if (!asr.configured) { asr.notConfigured(app); document.getElementById("who").textContent = ""; return; }
   var session = await asr.session();
-  if (!session) { location.href = "login.html"; return; }
+  if (!session) { location.href = "login.html" + location.hash; return; }
   // Came from the forum or a project page? Go back there now that they're signed in.
   var back = null;
   try { back = localStorage.getItem("asr_return"); localStorage.removeItem("asr_return"); } catch (e) {}

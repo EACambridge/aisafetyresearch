@@ -17,17 +17,30 @@
 <header class="wrap page-head">
   <a class="secondary" href="index.html">Back to home</a>
   <h1>Sign up or sign in</h1>
-  <p class="lede">Enter your email and we’ll send you a link, so there’s no password to remember. If you’re new, you’ll then answer a few questions so we can match you with a research team.</p>
+  <p class="lede">Enter your email and we’ll send you a sign-in code, so there’s no password to remember. If you’re new, you’ll then answer a few questions so we can match you with a research team.</p>
   <p class="hint" id="picked" hidden></p>
 </header>
 <main class="wrap" id="app">
   <section class="card">
+    <div id="notice" aria-live="polite"></div>
     <form id="login-form">
       <label for="email">Email address</label>
       <input type="email" id="email" autocomplete="email" required>
       <p class="hint">Use an email you check often: it’s how your team and we will reach you. Read <a href="privacy.html">how we use your details</a>.</p>
-      <button type="submit">Email me a link</button>
+      <button type="submit">Email me a code</button>
     </form>
+    <form id="code-form" hidden>
+      <p id="sent-to"></p>
+      <label for="code">Code from the email</label>
+      <input type="text" id="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]*" maxlength="12" required>
+      <p class="hint">It can take a minute to arrive, and it’s worth checking your spam or junk folder. The code works for an hour.</p>
+      <button type="submit">Sign in</button>
+      <p class="hint"><button type="button" class="link" id="resend">Send a new code</button> · <button type="button" class="link" id="change">Use a different email</button></p>
+    </form>
+    <div id="confirm" hidden>
+      <p>Press the button to finish signing in.</p>
+      <button type="button" id="continue">Continue</button>
+    </div>
     <div id="status" aria-live="polite"></div>
   </section>
 </main>
@@ -35,31 +48,91 @@
 (async function () {
   var card = document.querySelector("#app .card");
   if (!asr.configured) { asr.notConfigured(card); return; }
-  var q = new URLSearchParams(location.search).get("q");
+  var params = new URLSearchParams(location.search);
+  var $ = function (id) { return document.getElementById(id); };
+  var status = $("status");
+  function say(html) { status.innerHTML = html ? '<p class="msg">' + html + "</p>" : ""; }
+
+  var q = params.get("q");
   if (q) {
     try { localStorage.setItem("asr_question", q); } catch (e) {}
-    var pk = document.getElementById("picked");
-    pk.textContent = "You picked: " + q + ". We’ll remember it when you finish signing up.";
-    pk.hidden = false;
+    $("picked").textContent = "You picked: " + q + ". We’ll remember it when you finish signing up.";
+    $("picked").hidden = false;
   }
   // Pages like the forum send people here with ?next= so they come back after signing in.
-  var next = new URLSearchParams(location.search).get("next") || "";
+  var next = params.get("next") || "";
   if (/^[a-z0-9-]+\.html(\?[a-z]=\d+)?$/.test(next)) {
     try { localStorage.setItem("asr_return", next); } catch (e) {}
   } else next = "";
-  if (await asr.session()) {
+  function done() {
     if (next) { try { localStorage.removeItem("asr_return"); } catch (e) {} }
-    location.href = next || "account.html"; return;
+    location.href = next || "account.html";
   }
-  document.getElementById("login-form").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    var email = document.getElementById("email").value.trim();
-    var status = document.getElementById("status");
-    status.innerHTML = '<p class="msg">Sending…</p>';
+  if (await asr.session()) { done(); return; }
+
+  // A link that was already used, usually because a university or work email system opened it to check it.
+  var hash = new URLSearchParams(location.hash.slice(1));
+  if (hash.get("error_code") || hash.get("error")) {
+    $("notice").innerHTML = '<p class="msg">That link had already been used or has run out. Some university and work email systems open links to check them, which uses them up. Enter your email below and type in the code from the new email instead.</p>';
+    history.replaceState(null, "", location.pathname + location.search);
+  }
+
+  // The link in the email comes here. We wait for a button press, so an email scanner opening the link can’t use it up.
+  var tokenHash = params.get("token_hash"), type = params.get("type");
+  if (tokenHash && ["email", "signup", "magiclink"].indexOf(type) >= 0) {
+    $("login-form").hidden = true;
+    $("confirm").hidden = false;
+    $("continue").addEventListener("click", async function () {
+      say("Signing you in…");
+      var r = await asr.client.auth.verifyOtp({ token_hash: tokenHash, type: type });
+      if (!r.error) { done(); return; }
+      $("confirm").hidden = true;
+      $("login-form").hidden = false;
+      say("That link has run out or was already used. Enter your email and we’ll send you a new code.");
+    });
+    return;
+  }
+
+  var email = "";
+  async function send() {
+    say("Sending…");
     var r = await asr.client.auth.signInWithOtp({ email: email, options: { emailRedirectTo: location.origin + "/account.html" } });
-    status.innerHTML = r.error
-      ? '<p class="msg">Something went wrong: ' + asr.esc(r.error.message) + "</p>"
-      : '<p class="msg">Check your inbox for a link from AI Safety Research. It may take a minute to arrive, and it’s worth checking your spam folder. Open the link on this device if you can.</p>';
+    if (r.error) {
+      say(/rate|seconds|too many/i.test(r.error.message)
+        ? "We’ve sent a few emails already. Please wait a minute, then try again."
+        : "Something went wrong: " + asr.esc(r.error.message));
+      return false;
+    }
+    say("");
+    return true;
+  }
+  $("login-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    email = $("email").value.trim();
+    if (!(await send())) return;
+    $("login-form").hidden = true;
+    $("code-form").hidden = false;
+    $("sent-to").innerHTML = "We’ve emailed a code to <strong>" + asr.esc(email) + "</strong>. Type it in below.";
+    $("code").focus();
+  });
+  $("code-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var token = $("code").value.replace(/\D/g, "");
+    if (token.length < 6) { say("The code is the number in the email, at least 6 digits long."); return; }
+    say("Checking…");
+    var r = await asr.client.auth.verifyOtp({ email: email, token: token, type: "email" });
+    if (r.error) r = await asr.client.auth.verifyOtp({ email: email, token: token, type: "signup" });
+    if (!r.error) { done(); return; }
+    say("That code didn’t work. Check you typed the newest one, or send a new code.");
+  });
+  $("resend").addEventListener("click", async function () {
+    if (await send()) say("We’ve sent a new code. Use the newest email.");
+  });
+  $("change").addEventListener("click", function () {
+    $("code-form").hidden = true;
+    $("login-form").hidden = false;
+    say("");
+    $("email").focus();
   });
 })();
 </script>

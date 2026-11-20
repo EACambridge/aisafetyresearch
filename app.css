@@ -22,6 +22,7 @@ textarea { min-height: 8rem; resize: vertical; }
 button { font: inherit; font-weight: 800; cursor: pointer; background: var(--ink); color: var(--paper); border: 0; border-radius: 2px; padding: 0.8rem 1.4rem; margin-top: 1.25rem; }
 button.quiet { background: transparent; color: var(--ink); border: 2px solid var(--ink); }
 button.danger { background: transparent; color: var(--ink); border: 2px solid var(--ink); }
+button.link { background: none; color: inherit; padding: 0; margin: 0; font-weight: 700; font-size: inherit; text-decoration: underline; }
 .msg { margin-top: 1rem; padding: 0.75rem 1rem; border-left: 4px solid var(--ink); background: var(--field); }
 .list { list-style: none; }
 .list li { border-top: 1px solid var(--rule); padding-block: 1rem; }

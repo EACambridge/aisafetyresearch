@@ -35,7 +35,7 @@ So the machinery exists to: collect sign-ups, suggest teams, introduce them fast
 | Hosting | Serves the pages | GitHub Pages (repository Settings > Pages). Free. |
 | Domain name | aisafetyresearch.co.uk | names.co.uk (DNS records). Don't touch the four GitHub A records, the www record or the `mail` records, or the site or sign-in emails will stop working. |
 | Accounts | Sign-in, sign-up answers, teams, completed projects, forum threads and comments | Supabase project "EACambridge's Project" (`vidkjapmgeuomrqduycm`), hosted in Frankfurt: [dashboard](https://supabase.com/dashboard/project/vidkjapmgeuomrqduycm). Free plan. |
-| Sign-in emails | Sends the "Email me a link" emails | Resend (resend.com, signed in as ea.cambr), from team@mail.aisafetyresearch.co.uk. Supabase sends through it (Supabase > Authentication > Emails > SMTP Settings). |
+| Sign-in emails | Sends the "Email me a code" emails | Resend (resend.com, signed in as ea.cambr), from team@mail.aisafetyresearch.co.uk. Supabase sends through it (Supabase > Authentication > Emails > SMTP Settings). |
 | Matching spreadsheet | People, proposed teams, teams, check-ins, "Needs attention" | [AI Safety Research sign-ups](https://docs.google.com/spreadsheets/d/1tOuBfJgnmWL2-pd7lLVjQfm24I6I5WYrK6dZrPT4x9Q/edit). Its **Matching** menu runs everything. |
 | Matching code | Syncs sign-ups, suggests teams, writes intro emails, sends check-ins | Apps Script project ["AI Safety Research matching"](https://script.google.com/home/projects/1uBP-KoEEgbZDIFwIoK7xF7rD56N-kvpzrwUVD9-5iYS3_k5Ym9qz-Y-Y/edit) (Extensions > Apps Script from the spreadsheet). |
 | Questions database | The research questions, interest counts and teams shown on the site | [AI Safety Research: questions database](https://docs.google.com/spreadsheets/d/1uB6p3rnhhEJuFfcrdDS-MK-BhIAEdJHkNzcEsbmxNt0/edit). Published to the web as CSV; the site reads that. |
@@ -148,7 +148,9 @@ Matching menu > **Turn on weekly check-ins (Mondays)**. They're **off** at the m
 
 ### 8. Change the sign-in emails
 
-Supabase dashboard > Authentication > Emails > Templates. Edit **Confirm sign up** (new people) and **Magic link or OTP** (returning people). Keep the `{{ .ConfirmationURL }}` link in place. Send yourself a link from the sign-up page to check.
+Supabase dashboard > Authentication > Emails > Templates. Edit **Confirm sign up** (new people) and **Magic link or OTP** (returning people). Send yourself a code from the sign-up page to check.
+
+Both emails carry an 8-digit code (`{{ .Token }}`) that people type on login.html. Keep the code in, and don't switch the link back to `{{ .ConfirmationURL }}`: university and work email systems (Cambridge's Outlook among them) open every link in an email to scan it, which uses up a one-time link before the person clicks it. The code can't be used up that way. The link in each email goes to `login.html?token_hash={{ .TokenHash }}&type=signup` (or `type=email` in the sign-in email), and the page waits for the person to press Continue, so a scanner opening it does nothing. Code length and expiry are under Authentication > Sign In / Providers > Email (8 digits, one hour).
 
 ### 9. Add another website admin
 
