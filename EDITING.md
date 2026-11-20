@@ -173,7 +173,7 @@ This touches several places, so do it carefully and test with a spare email addr
 2. Supabase: add a column to the `profiles` table (SQL Editor: `alter table public.profiles add column ...`).
 3. Matching Apps Script: `syncFromAccounts_` (which columns it reads and where it writes them) and `PEOPLE_HEADERS` if People needs a new column.
 4. `privacy.html`: the "What we collect" list.
-5. The experience answers must keep the words the matcher looks for: "experienced", "supervised", "SPAR", "MARS" or "Pivotal" count as experienced; "some" counts as some experience; anything else counts as new.
+5. The experience answers must start "Level 1" to "Level 5": the matcher reads the number. The five levels follow the Research Skill Development framework (University of Adelaide), which measures how independently someone researches. People who ask for a similar level are matched within one level of each other.
 
 ### 12. Handle a request to delete someone's data
 
