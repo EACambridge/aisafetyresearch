@@ -79,16 +79,56 @@
 
       <fieldset class="radios" id="areas">
         <legend>Which areas interest you?</legend>
-        <p class="hint">Tick all that apply.</p>
-        <label><input type="checkbox" name="areas" value="Interpretability"> Interpretability</label>
-        <label><input type="checkbox" name="areas" value="Evaluations and red-teaming"> Evaluations and red-teaming</label>
-        <label><input type="checkbox" name="areas" value="Chain of thought and reasoning"> Chain of thought and reasoning</label>
-        <label><input type="checkbox" name="areas" value="AI governance and policy"> AI governance and policy</label>
-        <label><input type="checkbox" name="areas" value="Compute governance"> Compute governance</label>
-        <label><input type="checkbox" name="areas" value="Government and public policy"> Government and public policy</label>
-        <label><input type="checkbox" name="areas" value="AI law and regulation"> AI law and regulation</label>
-        <label><input type="checkbox" name="areas" value="International coordination"> International coordination</label>
-        <label><input type="checkbox" name="areas" value="Not sure yet"> Not sure yet</label>
+        <p class="hint">Tick everything that interests you. The more you tick, the quicker we can find you a team.</p>
+        <div class="area-cols">
+          <div class="area-group"><p class="area-head">Technical AI safety</p>
+            <label><input type="checkbox" name="areas" value="Interpretability"> Interpretability</label>
+            <label><input type="checkbox" name="areas" value="Activation and white-box monitoring"> Activation and white-box monitoring</label>
+            <label><input type="checkbox" name="areas" value="Chain of thought and reasoning"> Chain of thought and reasoning</label>
+            <label><input type="checkbox" name="areas" value="Dangerous capability and behaviour evaluations"> Dangerous capability and behaviour evaluations</label>
+            <label><input type="checkbox" name="areas" value="Red-teaming and jailbreaks"> Red-teaming and jailbreaks</label>
+            <label><input type="checkbox" name="areas" value="AI control"> AI control</label>
+            <label><input type="checkbox" name="areas" value="Deception and alignment faking"> Deception and alignment faking</label>
+            <label><input type="checkbox" name="areas" value="Reward hacking"> Reward hacking</label>
+            <label><input type="checkbox" name="areas" value="Backdoors and robustness"> Backdoors and robustness</label>
+            <label><input type="checkbox" name="areas" value="Unlearning dangerous knowledge"> Unlearning dangerous knowledge</label>
+            <label><input type="checkbox" name="areas" value="Agent safety"> Agent safety</label>
+            <label><input type="checkbox" name="areas" value="Scalable oversight"> Scalable oversight</label>
+            <label><input type="checkbox" name="areas" value="Theory and foundations"> Theory and foundations</label>
+          </div>
+          <div class="area-group"><p class="area-head">Technical AI governance</p>
+            <label><input type="checkbox" name="areas" value="Compute governance"> Compute governance</label>
+            <label><input type="checkbox" name="areas" value="Audits and third-party assessment"> Audits and third-party assessment</label>
+            <label><input type="checkbox" name="areas" value="Verification of AI agreements"> Verification of AI agreements</label>
+            <label><input type="checkbox" name="areas" value="Model security and weight protection"> Model security and weight protection</label>
+            <label><input type="checkbox" name="areas" value="Monitoring AI progress and incidents"> Monitoring AI progress and incidents</label>
+          </div>
+          <div class="area-group"><p class="area-head">Policy and strategy</p>
+            <label><input type="checkbox" name="areas" value="Pausing or slowing frontier AI"> Pausing or slowing frontier AI</label>
+            <label><input type="checkbox" name="areas" value="International coordination and treaties"> International coordination and treaties</label>
+            <label><input type="checkbox" name="areas" value="US AI policy"> US AI policy</label>
+            <label><input type="checkbox" name="areas" value="UK AI policy"> UK AI policy</label>
+            <label><input type="checkbox" name="areas" value="EU AI policy"> EU AI policy</label>
+            <label><input type="checkbox" name="areas" value="China and AI"> China and AI</label>
+            <label><input type="checkbox" name="areas" value="Frontier AI company safety policies"> Frontier AI company safety policies</label>
+            <label><input type="checkbox" name="areas" value="Frontier AI safety standards"> Frontier AI safety standards</label>
+            <label><input type="checkbox" name="areas" value="AI and national security"> AI and national security</label>
+            <label><input type="checkbox" name="areas" value="AI misuse and biosecurity"> AI misuse and biosecurity</label>
+            <label><input type="checkbox" name="areas" value="Concentration of power"> Concentration of power</label>
+            <label><input type="checkbox" name="areas" value="Forecasting and AI timelines"> Forecasting and AI timelines</label>
+            <label><input type="checkbox" name="areas" value="Public opinion and advocacy"> Public opinion and advocacy</label>
+          </div>
+          <div class="area-group"><p class="area-head">AI law</p>
+            <label><input type="checkbox" name="areas" value="AI-specific legislation"> AI-specific legislation</label>
+            <label><input type="checkbox" name="areas" value="Liability for AI harms"> Liability for AI harms</label>
+            <label><input type="checkbox" name="areas" value="Licensing of frontier AI"> Licensing of frontier AI</label>
+            <label><input type="checkbox" name="areas" value="Competition law and lab coordination"> Competition law and lab coordination</label>
+            <label><input type="checkbox" name="areas" value="Autonomous decision-making and agentic AI"> Autonomous decision-making and agentic AI</label>
+          </div>
+          <div class="area-group"><p class="area-head">Still deciding</p>
+            <label><input type="checkbox" name="areas" value="Not sure yet"> Not sure yet</label>
+          </div>
+        </div>
       </fieldset>
 
       <label for="question">Which question would you like to work on?</label>
@@ -346,6 +386,8 @@
       var firstMissing = document.querySelector(".missing"); if (firstMissing) firstMissing.scrollIntoView({ block: "center" });
       return;
     }
+    var realAreas = all("areas").filter(function (x) { return x !== "Not sure yet"; });
+    if (realAreas.length === 1 && !confirm("You’ve ticked one area. Ticking a few more makes it much quicker to find you a team. Submit anyway?")) return;
     if (first) { row.privacy_agreed_at = new Date().toISOString(); row.signup_completed_at = row.privacy_agreed_at; }
     var r = await db.from("profiles").update(row).eq("id", uid).select().single();
     if (r.error) { st.innerHTML = '<p class="msg">Couldn’t save: ' + esc(r.error.message) + "</p>"; return; }

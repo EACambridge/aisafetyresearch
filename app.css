@@ -32,3 +32,8 @@ button.link { background: none; color: inherit; padding: 0; margin: 0; font-weig
 footer { border-top: 1px solid var(--rule); padding-block: 2rem 3rem; margin-top: 3rem; font-size: 0.85rem; color: var(--ink-soft); }
 footer a { margin-right: 0.75rem; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Research areas on the sign-up form: grouped under headings, in columns */
+.area-cols { columns: 2 17rem; column-gap: 2rem; }
+.area-group { break-inside: avoid; margin-bottom: 1rem; }
+.area-head { font-weight: 800; margin: 0.6rem 0 0.2rem; }
